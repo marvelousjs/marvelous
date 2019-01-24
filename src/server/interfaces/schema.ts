@@ -12,4 +12,5 @@ export interface ISchemaProperty {
     [key: string]: ISchemaProperty;
   };
   additionalProperties?: ISchemaProperty | boolean;
+  items?: ISchemaProperty | boolean;
 }

@@ -12,6 +12,9 @@ interface IServerOpts {
   environment?: string;
   enableLogging?: boolean;
   functions?: any;
+  onLoad?: Function;
+  onStart?: Function;
+  onStop?: Function;
   url?: string;
 }
 
@@ -21,6 +24,10 @@ export class Server {
   context: any = {};
   express: Express;
   listener: http.Server;
+
+  onLoad: Function;
+  onStart: Function;
+  onStop: Function;
 
   environment = process.env.NODE_ENV;
   enableLogging = false;
@@ -37,6 +44,15 @@ export class Server {
     }
     if (opts && opts.functions !== undefined) {
       this.functions = opts.functions;
+    }
+    if (opts && opts.onLoad !== undefined) {
+      this.onLoad = opts.onLoad;
+    }
+    if (opts && opts.onStart !== undefined) {
+      this.onStart = opts.onStart;
+    }
+    if (opts && opts.onStop !== undefined) {
+      this.onStop = opts.onStop;
     }
     if (opts && opts.url !== undefined) {
       this.url = opts.url;
@@ -55,6 +71,15 @@ export class Server {
       // bind handler to function
       self.functions[functionName] = self.functions[functionName].bind(this);
     });
+  }
+
+  async load(cb?: Function) {
+    if (cb) {
+      await cb();
+    }
+    if (this.onLoad) {
+      await this.onLoad();
+    }
   }
 
   async start(cb?: Function) {
@@ -95,10 +120,13 @@ export class Server {
       this.listener = this.express.listen(
         parseInt(serverUrl.port, 10),
         serverUrl.hostname,
-        (...args: any[]) => {
+        async (...args: any[]) => {
           resolve.apply(args);
           if (cb) {
-            cb.apply(args);
+            await cb.apply(args);
+          }
+          if (this.onStart) {
+            await this.onStart.apply(args);
           }
         }
       );
@@ -107,10 +135,13 @@ export class Server {
 
   async stop(cb?: Function) {
     return new Promise(resolve => {
-      this.listener.close((...args: any[]) => {
+      this.listener.close(async (...args: any[]) => {
         resolve.apply(args);
         if (cb) {
-          cb.apply(args);
+          await cb.apply(args);
+        }
+        if (this.onStop) {
+          await this.onStop.apply(args);
         }
       });
     });
