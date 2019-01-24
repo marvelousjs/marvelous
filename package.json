@@ -1,0 +1,33 @@
+{
+  "name": "marvelous",
+  "version": "0.1.0",
+  "description": "the marvelous framework",
+  "main": "./dist/server/server.js",
+  "bin": {
+    "mvs": "./bin/mvs.js"
+  },
+  "dependencies": {
+    "@zappjs/core": "^0.3.0",
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.17.0",
+    "@types/express": "^4.16.0",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.18",
+    "jazzdb": "^0.6.4",
+    "mocha": "^5.2.0",
+    "nodemon": "^1.18.9",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.2.1"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start:dev": "NODE_ENV=development node dist/server/scripts/start",
+    "start:local": "NODE_ENV=local node dist/server/scripts/start",
+    "start:prod": "NODE_ENV=production nohup nodemon dist/server/scripts/start -I --ignore data/ &",
+    "start:test": "NODE_ENV=test node dist/server/scripts/start",
+    "test": "NODE_ENV=test mocha -r ts-node/register src/**/*.spec.ts"
+  }
+}
