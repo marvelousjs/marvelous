@@ -1,6 +1,6 @@
 {
   "name": "marvelous",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "the marvelous framework",
   "main": "./dist/server/server.js",
   "bin": {
@@ -22,6 +22,9 @@
     "ts-node": "^7.0.1",
     "typescript": "^3.2.1"
   },
+  "files": [
+    "dist/"
+  ],
   "scripts": {
     "build": "tsc",
     "start:dev": "NODE_ENV=development node dist/server/scripts/start",
