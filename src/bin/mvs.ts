@@ -1,3 +1,4 @@
+import * as Case from 'case';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import zapp from '@zappjs/core';
@@ -82,9 +83,11 @@ const interfaces: any = {};
 const items = fs.readdirSync('./src/schemas')
   .filter(item => /\.schema\.ts$/i.test(item));
 items.forEach((item) => {
-  const name = path.basename(item).replace(/\.schema\.ts$/i, '');
-  const interfaceObject = require(path.normalize(`${process.cwd()}/src/schemas/${item}`)).default;
-  interfaces[name] = interfaceObject;
+  const interfaceObject = require(path.normalize(`${process.cwd()}/src/schemas/${item}`));
+  Object.keys(interfaceObject).forEach((key) => {
+    const name = Case.camel(key).replace(/schema$/i, '');
+    interfaces[name] = interfaceObject[key];
+  });
 });
 
 generateHandler({

@@ -15,6 +15,7 @@ interface IServerOpts {
   onLoad?: Function;
   onStart?: Function;
   onStop?: Function;
+  schemas?: any;
   url?: string;
 }
 
@@ -31,6 +32,7 @@ export class Server {
 
   environment = process.env.NODE_ENV;
   enableLogging = false;
+  schemas: any = {};
   url = configs.url || 'http://localhost:5000';
 
   functions: any = {};
@@ -53,6 +55,9 @@ export class Server {
     }
     if (opts && opts.onStop !== undefined) {
       this.onStop = opts.onStop;
+    }
+    if (opts && opts.schemas !== undefined) {
+      this.schemas = opts.schemas;
     }
     if (opts && opts.url !== undefined) {
       this.url = opts.url;
@@ -111,7 +116,7 @@ export class Server {
         const self = this as any;
         this.express.post(
           `/${functionName}`,
-          handler(self.functions[functionName], handlerOpts)
+          handler(self.functions[functionName], self.schemas[functionName], handlerOpts)
         );
       });
 
