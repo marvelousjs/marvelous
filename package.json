@@ -1,6 +1,6 @@
 {
   "name": "marvelous",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "the marvelous framework",
   "main": "./dist/server/server.js",
   "bin": {
@@ -23,6 +23,7 @@
     "typescript": "^3.2.1"
   },
   "files": [
+    "bin/",
     "dist/"
   ],
   "scripts": {
