@@ -1,19 +1,19 @@
 {
   "name": "marvelous",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "the marvelous framework",
   "main": "./dist/server/server.js",
   "bin": {
     "mvs": "./bin/mvs.js"
   },
   "dependencies": {
+    "@types/body-parser": "^1.17.0",
+    "@types/express": "^4.16.0",
     "@zappjs/core": "^0.3.0",
     "body-parser": "^1.18.3",
     "express": "^4.16.4"
   },
   "devDependencies": {
-    "@types/body-parser": "^1.17.0",
-    "@types/express": "^4.16.0",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.18",
     "jazzdb": "^0.6.4",
