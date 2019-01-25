@@ -13,4 +13,9 @@ export interface ISchemaProperty {
   };
   additionalProperties?: ISchemaProperty | boolean;
   items?: ISchemaProperty | boolean;
+  anyOf?: ISchemaProperty[];
+  maxLength?: number;
+  minLength?: number;
+  max?: number;
+  min?: number;
 }
