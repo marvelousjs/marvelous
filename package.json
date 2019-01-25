@@ -1,6 +1,6 @@
 {
   "name": "marvelous",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "the marvelous framework",
   "main": "./dist/server.js",
   "bin": {
