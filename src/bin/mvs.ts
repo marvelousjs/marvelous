@@ -70,22 +70,22 @@ export function generateHandler(opts: IGenerateOpts) {
     specs: opts.specs,
     templates: {
       appInterface: {
-        template: fs.readFileSync(`${__dirname}/../../src/bin/templates/appInterface.hbs`, 'utf8')
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/appInterface.hbs`, 'utf8')
       },
       functionInterface: {
-        template: fs.readFileSync(`${__dirname}/../../src/bin/templates/functionInterface.hbs`, 'utf8')
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/functionInterface.hbs`, 'utf8')
       },
       functionsBarrel: {
-        template: fs.readFileSync(`${__dirname}/../../src/bin/templates/functionsBarrel.hbs`, 'utf8')
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/functionsBarrel.hbs`, 'utf8')
       },
       interfacesBarrel: {
-        template: fs.readFileSync(`${__dirname}/../../src/bin/templates/interfacesBarrel.hbs`, 'utf8')
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/interfacesBarrel.hbs`, 'utf8')
       },
       swiftClient: {
-        template: fs.readFileSync(`${__dirname}/../../src/bin/templates/swiftClient.hbs`, 'utf8')
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/swiftClient.hbs`, 'utf8')
       },
       tsClient: {
-        template: fs.readFileSync(`${__dirname}/../../src/bin/templates/tsClient.hbs`, 'utf8')
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/tsClient.hbs`, 'utf8')
       }
     }
   });

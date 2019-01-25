@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import { IModel, Model, AttributeTypes as Types, loadData } from 'jazzdb';
 
-import { Server } from '../../server/server';
+import { Server } from '../server';
 
 describe('server', () => {
   // echo function
