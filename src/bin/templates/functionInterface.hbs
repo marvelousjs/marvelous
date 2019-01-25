@@ -1,0 +1,7 @@
+export interface I{{{case name 'pascal'}}}Function {
+  (req?: I{{{case name 'pascal'}}}Request): Promise<I{{{case name 'pascal'}}}Response>;
+}
+
+{{#each interfaces}}
+{{{tsInterface (concat ../name (case @key 'pascal')) this}}}
+{{/each}}

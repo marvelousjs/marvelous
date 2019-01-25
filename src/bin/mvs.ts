@@ -11,6 +11,22 @@ export function generateHandler(opts: IGenerateOpts) {
   const items = zapp({
     encoders: {},
     files: {
+      tsClient: {
+        filename: 'src/clients/client.ts',
+        engine: 'handlebars',
+        template: 'tsClient',
+        mapping: {
+          functions: '/interfaces'
+        }
+      },
+      swiftClient: {
+        filename: 'src/clients/client.swift',
+        engine: 'handlebars',
+        template: 'swiftClient',
+        mapping: {
+          functions: '/interfaces'
+        }
+      },
       appInterface: {
         filename: 'src/types/app.ts',
         engine: 'handlebars',
@@ -54,16 +70,22 @@ export function generateHandler(opts: IGenerateOpts) {
     specs: opts.specs,
     templates: {
       appInterface: {
-        template: `import {\n{{#each interfaces}}  I{{{case @key 'pascal'}}}Function{{#unless @last}},\n{{/unless}}{{/each}}\n} from './functions';\n\nexport interface IApi {\n{{#each interfaces}}  {{{case @key 'camel'}}}: I{{{case @key 'pascal'}}}Function;\n{{/each}}\n}`
+        template: fs.readFileSync(`${__dirname}/../../src/bin/templates/appInterface.hbs`, 'utf8')
       },
       functionInterface: {
-        template: `export interface I{{{case name 'pascal'}}}Function {\n  (req?: I{{{case name 'pascal'}}}Request): Promise<I{{{case name 'pascal'}}}Response>;\n}\n\n{{#each interfaces}}{{{tsInterface (concat ../name (case @key 'pascal')) this}}}{{#unless @last}}\n{{/unless}}{{/each}}`
+        template: fs.readFileSync(`${__dirname}/../../src/bin/templates/functionInterface.hbs`, 'utf8')
       },
       functionsBarrel: {
-        template: `{{#each interfaces}}export * from './{{{@key}}}';\n{{/each}}`
+        template: fs.readFileSync(`${__dirname}/../../src/bin/templates/functionsBarrel.hbs`, 'utf8')
       },
       interfacesBarrel: {
-        template: `export * from './app';\nexport * from './functions';`
+        template: fs.readFileSync(`${__dirname}/../../src/bin/templates/interfacesBarrel.hbs`, 'utf8')
+      },
+      swiftClient: {
+        template: fs.readFileSync(`${__dirname}/../../src/bin/templates/swiftClient.hbs`, 'utf8')
+      },
+      tsClient: {
+        template: fs.readFileSync(`${__dirname}/../../src/bin/templates/tsClient.hbs`, 'utf8')
       }
     }
   });

@@ -1,0 +1,11 @@
+import {
+  {{#each interfaces}}
+  I{{{case @key 'pascal'}}}Function{{#unless @last}},{{/unless}}
+  {{/each}}
+} from './functions';
+    
+export interface IApi {
+  {{#each interfaces}}
+  {{{case @key 'camel'}}}: I{{{case @key 'pascal'}}}Function;
+  {{/each}}
+}

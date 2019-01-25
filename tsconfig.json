@@ -9,5 +9,5 @@
     "noUnusedLocals": true,
     "target": "es5"
   },
-  "exclude": ["dist", "node_modules", "**/*.spec.ts"]
+  "exclude": ["dist", "node_modules", "src/bin", "**/*.spec.ts"]
 }

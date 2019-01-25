@@ -139,14 +139,14 @@ describe('server', () => {
   });
 
   it('should call function with context', async () => {
-    testServer.context = {
+    testServer.setContext({
       data: await loadData({
-        path: `./data/${this.environment}`,
+        path: `./data/${testServer.environment}`,
         models: {
           users: UserModel
         }
       })
-    };
+    });
 
     const response = await testServer.functions.listUsers();
     assert.deepStrictEqual(response, { users: [] });
