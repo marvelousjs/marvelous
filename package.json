@@ -12,12 +12,13 @@
     "@zappjs/core": "^0.3.0",
     "body-parser": "^1.18.3",
     "case": "^1.6.1",
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "fs-extra": "^7.0.1",
+    "jazzdb": "^0.7.0"
   },
   "devDependencies": {
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.18",
-    "jazzdb": "^0.6.4",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.9",
     "ts-node": "^7.0.1",

@@ -5,19 +5,19 @@ interface IClientOpts {
   url: string;
 }
 
-interface IApi {
+interface IClient {
   {{#each functions}}
-  {{{case @key 'camel'}}}: I{{{case @key 'pascal'}}}Function;
+  {{{case @key 'camel'}}}: IClient{{{case @key 'pascal'}}}Function;
   {{/each}}
 }
 
 {{#each functions}}
-export interface I{{{case @key 'pascal'}}}Function {
-  (req?: I{{{case @key 'pascal'}}}Request): Promise<I{{{case @key 'pascal'}}}Response>;
+export interface IClient{{{case @key 'pascal'}}}Function {
+  (req?: IClient{{{case @key 'pascal'}}}Request): Promise<IClient{{{case @key 'pascal'}}}Response>;
 }
 
 {{#each this}}
-{{{tsInterface (concat @../key (case @key 'pascal')) this}}}
+{{{tsInterface (concat 'Client' (case @../key 'pascal') (case @key 'pascal')) this}}}
 {{/each}}
 {{/each}}
 
@@ -60,7 +60,7 @@ async function handler(req: any = {}, urlString: string = ''): Promise<any> {
   });
 }
 
-export class Client implements IApi {
+export class Client implements IClient {
   url = 'http://localhost:5000';
 
   constructor(opts?: IClientOpts) {
@@ -70,7 +70,7 @@ export class Client implements IApi {
   }
   {{#each functions}}
 
-  {{{case @key 'camel'}}}: I{{{case @key 'pascal'}}}Function = async req => {
+  {{{case @key 'camel'}}}: IClient{{{case @key 'pascal'}}}Function = async req => {
     return handler(req, `${this.url}/{{{case @key 'camel'}}}`);
   };
   {{/each}}

@@ -1,13 +1,45 @@
 import * as assert from 'assert';
-import { IModel, Model, AttributeTypes as Types, loadData } from 'jazzdb';
+import { IModel, Model, AttributeTypes as Types } from 'jazzdb';
 
-import { Server } from '../server';
+import { handler } from '../utils';
 
 describe('server', () => {
   // echo function
 
-  interface IEcho {
-    (req?: IEchoRequest): Promise<IEchoResponse>;
+  const EchoSchema = {
+    request: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        text: {
+          required: true,
+          type: 'string'
+        }
+      }
+    },
+    response: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        text: {
+          required: true,
+          type: 'string'
+        }
+      }
+    }
+  };
+
+  interface IEchoFunction {
+    (
+      args: {
+        context: ITestServerContext,
+        request?: IEchoRequest
+      }
+    ): Promise<IEchoResponse>;
+  }
+
+  interface IEchoHandler {
+    (request?: IEchoRequest): Promise<IEchoResponse>;
   }
 
   interface IEchoRequest {
@@ -18,21 +50,58 @@ describe('server', () => {
     text: string;
   }
 
-  const echo: IEcho = async function (req) {
+  const echo: IEchoFunction = async ({ request }) => {
     return {
-      text: req.text
+      text: request.text
     };
   }
 
   // list users function
 
-  interface IListUsers {
-    (req?: IListUsersRequest): Promise<IListUsersResponse>;
+  const ListUsersSchema = {
+    request: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {}
+    },
+    response: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        users: {
+          required: true,
+          type: 'array',
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              username: {
+                required: true,
+                type: 'string'
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+  interface IListUsersFunction {
+    (
+      args: {
+        context: ITestServerContext,
+        request?: IListUsersRequest
+      }
+    ): Promise<IListUsersResponse>;
+  }
+
+  interface IListUsersHandler {
+    (request?: IListUsersRequest): Promise<IListUsersResponse>;
   }
 
   interface IListUsersRequest {}
 
-  interface IListUsersResponse{
+  interface IListUsersResponse {
     users: IListUsersResponseUser[];
   }
 
@@ -40,14 +109,12 @@ describe('server', () => {
     username: string;
   }
 
-  const listUsers: IListUsers = async function (req) {
-    const context: ITestServerContext = this.context;
-
+  const listUsers: IListUsersFunction = async ({ context }) => {
     return {
       users: context.data.users.toArray().map((u) => ({
         username: u.username
       }))
-    }
+    };
   }
 
   // test models
@@ -100,15 +167,7 @@ describe('server', () => {
     }
   }
 
-  // test server
-
-  interface ITestServer extends Server {
-    context: ITestServerContext;
-    functions: {
-      echo: IEcho;
-      listUsers: IListUsers;
-    };
-  }
+  // test server context
 
   interface ITestServerContext {
     data: {
@@ -116,39 +175,35 @@ describe('server', () => {
     };
   }
 
-  const testServer: ITestServer = new Server({
-    functions: {
-      echo,
-      listUsers
-    }
-  });
-
-  beforeEach(async () => {
-    await testServer.start();
-  });
-
-  afterEach(async () => {
-    await testServer.stop();
-  });
-
   it('should call function', async () => {
-    const response = await testServer.functions.echo({
+    const context = {};
+
+    const echoHandler: IEchoHandler = handler(
+      echo,
+      EchoSchema,
+      context
+    );
+
+    const response = await echoHandler({
       text: 'test'
     });
     assert.deepStrictEqual(response, { text: 'test' });
   });
 
   it('should call function with context', async () => {
-    testServer.setContext({
-      data: await loadData({
-        path: `./data/${testServer.environment}`,
-        models: {
-          users: UserModel
-        }
-      })
-    });
+    const context = {
+      data: {
+        users: new UserModel()
+      }
+    };
 
-    const response = await testServer.functions.listUsers();
+    const listUsersHandler: IListUsersHandler = handler(
+      listUsers,
+      ListUsersSchema,
+      context
+    );
+
+    const response = await listUsersHandler();
     assert.deepStrictEqual(response, { users: [] });
   });
 });

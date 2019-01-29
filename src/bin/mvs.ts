@@ -38,7 +38,7 @@ export function generateHandler(opts: IGenerateOpts) {
       functionInterface: {
         filename: {
           engine: 'handlebars',
-          template: 'src/types/functions/{{{name}}}.ts',
+          template: 'src/types/functions/{{{name}}}.types.ts',
           mapping: {
             name: '@key'
           }

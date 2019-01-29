@@ -1,4 +1,17 @@
+import { IContext } from '../../interfaces';
+import { IUser } from '../../interfaces';
+
 export interface I{{{case name 'pascal'}}}Function {
+  (
+    opts: {
+      context: IContext;
+      request?: I{{{case name 'pascal'}}}Request;
+      user?: IUser;
+    }
+  ): Promise<I{{{case name 'pascal'}}}Response>;
+}
+
+export interface I{{{case name 'pascal'}}}Handler {
   (req?: I{{{case name 'pascal'}}}Request): Promise<I{{{case name 'pascal'}}}Response>;
 }
 

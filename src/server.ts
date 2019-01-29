@@ -6,7 +6,7 @@ import * as url from 'url';
 
 import { configs } from './configs';
 
-import { IHandlerOpts, handler } from './utils';
+import { IHandlerRequestOpts, handler } from './utils';
 
 interface IServerOpts {
   environment?: string;
@@ -19,6 +19,7 @@ interface IServerOpts {
   url?: string;
 }
 
+export * from './utils';
 export * from './interfaces';
 
 export class Server {
@@ -108,7 +109,8 @@ export class Server {
         res.status(200).send({});
       });
 
-      const handlerOpts: IHandlerOpts = {
+      const handlerOpts: IHandlerRequestOpts = {
+        context: this.context,
         enableLogging: this.enableLogging
       };
 
@@ -116,7 +118,29 @@ export class Server {
         const self = this as any;
         this.express.post(
           `/${functionName}`,
-          handler(self.functions[functionName], self.schemas[functionName], handlerOpts)
+          async (req: express.Request, res: express.Response) => {
+            try {
+              const response = await handler(
+                self.functions[functionName],
+                self.schemas[functionName],
+                this.context,
+                handlerOpts
+              )(req.body);
+              res.status(200).send(response);
+
+            } catch (error) {
+              // get response
+              const response = {
+                message: error.message
+              };
+              
+              res.status(500).send(response);
+            }
+
+            if (handlerOpts.onComplete) {
+              handlerOpts.onComplete();
+            }
+          }
         );
       });
 
