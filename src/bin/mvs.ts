@@ -125,7 +125,7 @@ export function generateHandler(opts: IGenerateOpts) {
     fs.writeFileSync(item.path, item.content);
   });
 
-  console.log(JSON.stringify(items, null, 2));
+  // console.log(JSON.stringify(items, null, 2));
 }
 
 const interfaces: any = {};
