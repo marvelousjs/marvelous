@@ -11,16 +11,13 @@ interface IServerOpts {
   actions?: any;
   environment?: string;
   enableLogging?: boolean;
+  knownErrors?: { new(): Error }[];
   onLoad?: Function;
   onStart?: Function;
   onStop?: Function;
   schemas?: any;
-  serverErrors?: Error[];
   url?: string;
 }
-
-export * from './utils';
-export * from './interfaces';
 
 export class Server {
   actions: any = {};
@@ -34,8 +31,8 @@ export class Server {
 
   environment = process.env.NODE_ENV;
   enableLogging = false;
+  knownErrors: { new(): Error }[] = [];
   schemas: any = {};
-  serverErrors: Error[] = [];
   url = configs.url || 'http://localhost:5000';
 
   constructor(opts?: IServerOpts) {
@@ -60,8 +57,8 @@ export class Server {
     if (opts && opts.schemas !== undefined) {
       this.schemas = opts.schemas;
     }
-    if (opts && opts.serverErrors !== undefined) {
-      this.serverErrors = opts.serverErrors;
+    if (opts && opts.knownErrors !== undefined) {
+      this.knownErrors = opts.knownErrors;
     }
     if (opts && opts.url !== undefined) {
       this.url = opts.url;
@@ -102,23 +99,14 @@ export class Server {
         res.status(200).send({});
       });
 
-      const handlerOpts = {
-        enableLogging: this.enableLogging
-      };
-
       Object.keys(this.actions).forEach(functionName => {
         const action = this.actions[functionName];
 
         this.express.post(
           `/${functionName}`,
           async (req: express.Request, res: express.Response) => {
-            const request = req.body;
             let response: any;
             let statusCode: number;
-
-            if (handlerOpts.enableLogging) {
-              console.log('REQUEST - ', request);
-            }
 
             try {
               const handler = loadHandler(action);
@@ -127,7 +115,7 @@ export class Server {
 
             } catch (error) {
               // known error
-              if (this.serverErrors.find(serverError => serverError.name === error.name)) {
+              if (this.knownErrors.find(knownError => error instanceof knownError)) {
                 response = {
                   name: error.name,
                   message: error.message
@@ -141,12 +129,8 @@ export class Server {
                 };
                 statusCode = 500;
 
-                console.log('INTERNAL ERROR - ', error);
+                console.log('INTERNAL ERROR -', error);
               }
-            }
-
-            if (handlerOpts.enableLogging) {
-              console.log('RESPONSE - ', response);
             }
 
             res.status(statusCode).send(response);

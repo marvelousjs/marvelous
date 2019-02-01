@@ -1,6 +1,6 @@
 import * as validator from 'is-my-json-valid';
 
-import { InvalidError } from '../errors';
+import { ValidationError } from '../errors';
 
 export interface ILoadHandlerOpts {
   enableLogging?: boolean;
@@ -22,7 +22,7 @@ export function loadHandler(actionClass: any, opts: ILoadHandlerOpts = {}) {
         const errorMessage = `"${validateRequest.errors[0].field.replace(/^data\./, '')}" ${
           validateRequest.errors[0].message
         }`;
-        throw new InvalidError(`Invalid Request: ${errorMessage}`);
+        throw new ValidationError(`Invalid Request: ${errorMessage}`);
       }
     }
 
@@ -41,7 +41,7 @@ export function loadHandler(actionClass: any, opts: ILoadHandlerOpts = {}) {
         const errorMessage = `"${validateResponse.errors[0].field.replace(/^data\./, '')}" ${
           validateResponse.errors[0].message
         }`;
-        throw new InvalidError(`Invalid Response: ${errorMessage}`);
+        throw new ValidationError(`Invalid Response: ${errorMessage}`);
       }
     }
 

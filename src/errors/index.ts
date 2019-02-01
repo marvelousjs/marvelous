@@ -1,1 +1,1 @@
-export * from './invalid';
+export * from './validation';

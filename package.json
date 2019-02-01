@@ -2,7 +2,7 @@
   "name": "marvelous",
   "version": "0.4.0",
   "description": "the marvelous framework",
-  "main": "./dist/server.js",
+  "main": "./dist/app.js",
   "bin": {
     "mvs": "./bin/mvs.js"
   },
