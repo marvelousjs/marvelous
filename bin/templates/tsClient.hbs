@@ -18,7 +18,7 @@ interface IClient {
 
 {{#each actions}}
 export interface IClient{{{case @key 'pascal'}}}Function {
-  (req?: IClient{{{case @key 'pascal'}}}Request): Promise<IClient{{{case @key 'pascal'}}}Response>;
+  (request?: IClient{{{case @key 'pascal'}}}Request): Promise<IClient{{{case @key 'pascal'}}}Response>;
 }
 
 {{#each this}}
