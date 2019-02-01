@@ -1,2 +1,2 @@
 export * from './action';
-export * from './loadAction';
+export * from './loadHandler';

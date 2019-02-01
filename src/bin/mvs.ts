@@ -11,8 +11,13 @@ export function generateHandler(opts: IGenerateOpts) {
   const items = zapp({
     encoders: {},
     files: {
+      autoBarrel: {
+        filename: 'src/.auto/index.ts',
+        engine: 'handlebars',
+        template: 'autoBarrel'
+      },
       tsClient: {
-        filename: 'src/clients/client.ts',
+        filename: 'src/.auto/clients/client.ts',
         engine: 'handlebars',
         template: 'tsClient',
         mapping: {
@@ -20,7 +25,7 @@ export function generateHandler(opts: IGenerateOpts) {
         }
       },
       swiftClient: {
-        filename: 'src/clients/client.swift',
+        filename: 'src/.auto/clients/client.swift',
         engine: 'handlebars',
         template: 'swiftClient',
         mapping: {
@@ -30,7 +35,7 @@ export function generateHandler(opts: IGenerateOpts) {
       actionInterface: {
         filename: {
           engine: 'handlebars',
-          template: 'src/types/actions/{{{name}}}.types.ts',
+          template: 'src/.auto/types/actions/{{{name}}}.types.ts',
           mapping: {
             name: '@key'
           }
@@ -44,15 +49,39 @@ export function generateHandler(opts: IGenerateOpts) {
         }
       },
       actionsBarrel: {
-        filename: 'src/types/actions/index.ts',
+        filename: 'src/.auto/types/actions/index.ts',
         engine: 'handlebars',
         template: 'actionsBarrel',
         mapping: {
           interfaces: '/interfaces'
         }
       },
+      handlerInterface: {
+        filename: {
+          engine: 'handlebars',
+          template: 'src/.auto/handlers/{{{name}}}.types.ts',
+          mapping: {
+            name: '@key'
+          }
+        },
+        engine: 'handlebars',
+        iterator: '/interfaces',
+        template: 'handlerInterface',
+        mapping: {
+          interfaces: '@value',
+          name: '@key'
+        }
+      },
+      handlersBarrel: {
+        filename: 'src/.auto/handlers/index.ts',
+        engine: 'handlebars',
+        template: 'handlersBarrel',
+        mapping: {
+          interfaces: '/interfaces'
+        }
+      },
       interfacesBarrel: {
-        filename: 'src/types/index.ts',
+        filename: 'src/.auto/types/index.ts',
         engine: 'handlebars',
         template: 'interfacesBarrel'
       }
@@ -66,6 +95,15 @@ export function generateHandler(opts: IGenerateOpts) {
       },
       actionsBarrel: {
         template: fs.readFileSync(`${__dirname}/../../bin/templates/actionsBarrel.hbs`, 'utf8')
+      },
+      autoBarrel: {
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/autoBarrel.hbs`, 'utf8')
+      },
+      handlerInterface: {
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/handlerInterface.hbs`, 'utf8')
+      },
+      handlersBarrel: {
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/handlersBarrel.hbs`, 'utf8')
       },
       interfacesBarrel: {
         template: fs.readFileSync(`${__dirname}/../../bin/templates/interfacesBarrel.hbs`, 'utf8')

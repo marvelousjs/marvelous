@@ -1,10 +1,10 @@
 import * as validator from 'is-my-json-valid';
 
-export interface ILoadActionOpts {
+export interface ILoadHandlerOpts {
   enableLogging?: boolean;
 }
 
-export function loadAction(actionClass: any, opts: ILoadActionOpts = {}) {
+export function loadHandler(actionClass: any, opts: ILoadHandlerOpts = {}) {
   const action = new actionClass();
 
   return async (request: any = {}) => {
