@@ -129,13 +129,13 @@ export function generateHandler(opts: IGenerateOpts) {
 }
 
 const interfaces: any = {};
-const items = fs.readdirSync('./src/schemas')
-  .filter(item => /\.schema\.ts$/i.test(item));
+const items = fs.readdirSync('./src/actions')
+  .filter(item => /\.ts$/i.test(item));
 items.forEach((item) => {
-  const interfaceObject = require(path.normalize(`${process.cwd()}/src/schemas/${item}`));
+  const interfaceObject = require(path.normalize(`${process.cwd()}/src/actions/${item}`));
   Object.keys(interfaceObject).forEach((key) => {
-    const name = Case.camel(key).replace(/schema$/i, '');
-    interfaces[name] = interfaceObject[key];
+    const name = Case.camel(key).replace(/Action$/, '');
+    interfaces[name] = new interfaceObject[key]().schema;
   });
 });
 
