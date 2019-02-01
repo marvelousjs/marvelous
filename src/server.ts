@@ -5,6 +5,7 @@ import * as http from 'http';
 import * as url from 'url';
 
 import { configs } from './configs';
+import { loadHandler } from './utils';
 
 interface IServerOpts {
   actions?: any;
@@ -106,29 +107,41 @@ export class Server {
       };
 
       Object.keys(this.actions).forEach(functionName => {
+        const action = this.actions[functionName];
+
         this.express.post(
           `/${functionName}`,
           async (req: express.Request, res: express.Response) => {
             const request = req.body;
             let response: any;
-            let statusCode = 500;
+            let statusCode: number;
 
             if (handlerOpts.enableLogging) {
               console.log('REQUEST - ', request);
             }
 
             try {
-              const action = new this.actions[functionName];
-              response = await action.handler(req.body);
+              const handler = loadHandler(action);
+              response = await handler(req.body);
               statusCode = 200;
 
             } catch (error) {
-              // get response
-              response = {
-                message: error.message
-              };
+              // known error
               if (this.serverErrors.find(serverError => serverError.name === error.name)) {
+                response = {
+                  name: error.name,
+                  message: error.message
+                };
                 statusCode = 400;
+              // unknown error
+              } else {
+                response = {
+                  name: 'UnknownError',
+                  message: 'Internal server error'
+                };
+                statusCode = 500;
+
+                console.log('INTERNAL ERROR - ', error);
               }
             }
 
