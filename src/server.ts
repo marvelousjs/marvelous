@@ -137,7 +137,7 @@ export class Server {
               } else {
                 response = {
                   name: 'UnknownError',
-                  message: 'Internal server error'
+                  message: 'Server encountered an unexpected error'
                 };
                 statusCode = 500;
 
