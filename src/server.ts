@@ -6,16 +6,15 @@ import * as url from 'url';
 
 import { configs } from './configs';
 
-import { IHandlerRequestOpts, handler } from './utils';
-
 interface IServerOpts {
+  actions?: any;
   environment?: string;
   enableLogging?: boolean;
-  functions?: any;
   onLoad?: Function;
   onStart?: Function;
   onStop?: Function;
   schemas?: any;
+  serverErrors?: Error[];
   url?: string;
 }
 
@@ -23,6 +22,7 @@ export * from './utils';
 export * from './interfaces';
 
 export class Server {
+  actions: any = {};
   context: any = {};
   express: Express;
   listener: http.Server;
@@ -34,19 +34,18 @@ export class Server {
   environment = process.env.NODE_ENV;
   enableLogging = false;
   schemas: any = {};
+  serverErrors: Error[] = [];
   url = configs.url || 'http://localhost:5000';
 
-  functions: any = {};
-
   constructor(opts?: IServerOpts) {
+    if (opts && opts.actions !== undefined) {
+      this.actions = opts.actions;
+    }
     if (opts && opts.environment !== undefined) {
       this.environment = opts.environment;
     }
     if (opts && opts.enableLogging !== undefined) {
       this.enableLogging = opts.enableLogging;
-    }
-    if (opts && opts.functions !== undefined) {
-      this.functions = opts.functions;
     }
     if (opts && opts.onLoad !== undefined) {
       this.onLoad = opts.onLoad;
@@ -60,6 +59,9 @@ export class Server {
     if (opts && opts.schemas !== undefined) {
       this.schemas = opts.schemas;
     }
+    if (opts && opts.serverErrors !== undefined) {
+      this.serverErrors = opts.serverErrors;
+    }
     if (opts && opts.url !== undefined) {
       this.url = opts.url;
     }
@@ -67,16 +69,6 @@ export class Server {
 
   setContext(context: any) {
     this.context = context;
-    
-    // check if functions have been added to handlers
-    Object.keys(this.functions).forEach(functionName => {
-      const self = this as any;
-      if (!self[functionName] === undefined) {
-        throw new Error(`${functionName} has not been added to "Server" class`);
-      }
-      // bind handler to function
-      self.functions[functionName] = self.functions[functionName].bind(this);
-    });
   }
 
   async load(cb?: Function) {
@@ -109,37 +101,42 @@ export class Server {
         res.status(200).send({});
       });
 
-      const handlerOpts: IHandlerRequestOpts = {
-        context: this.context,
+      const handlerOpts = {
         enableLogging: this.enableLogging
       };
 
-      Object.keys(this.functions).forEach(functionName => {
-        const self = this as any;
+      Object.keys(this.actions).forEach(functionName => {
         this.express.post(
           `/${functionName}`,
           async (req: express.Request, res: express.Response) => {
+            const request = req.body;
+            let response: any;
+            let statusCode = 500;
+
+            if (handlerOpts.enableLogging) {
+              console.log('REQUEST - ', request);
+            }
+
             try {
-              const response = await handler(
-                self.functions[functionName],
-                self.schemas[functionName],
-                this.context,
-                handlerOpts
-              )(req.body);
-              res.status(200).send(response);
+              const action = new this.actions[functionName];
+              response = await action.handler(req.body);
+              statusCode = 200;
 
             } catch (error) {
               // get response
-              const response = {
+              response = {
                 message: error.message
               };
-              
-              res.status(500).send(response);
+              if (this.serverErrors.find(serverError => serverError.name === error.name)) {
+                statusCode = 400;
+              }
             }
 
-            if (handlerOpts.onComplete) {
-              handlerOpts.onComplete();
+            if (handlerOpts.enableLogging) {
+              console.log('RESPONSE - ', response);
             }
+
+            res.status(statusCode).send(response);
           }
         );
       });

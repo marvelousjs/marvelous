@@ -3,7 +3,7 @@
 //
 
 import Foundation
-{{#each functions}}
+{{#each actions}}
 
 {{#each this}}
 struct {{{concat (case @../key 'pascal') (case @key 'pascal')}}}: Codable {
@@ -56,7 +56,7 @@ func handler(_ functionName: String, req: GetWeatherRequest) {
 }
 
 class Client: NSObject {
-    {{#each functions}}
+    {{#each actions}}
     func {{{case @key 'camel'}}}(_ req: {{{case @key 'pascal'}}}Request) {
         return handler("{{{case @key 'camel'}}}", req: req)
     }

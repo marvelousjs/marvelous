@@ -16,7 +16,7 @@ export function generateHandler(opts: IGenerateOpts) {
         engine: 'handlebars',
         template: 'tsClient',
         mapping: {
-          functions: '/interfaces'
+          actions: '/interfaces'
         }
       },
       swiftClient: {
@@ -24,37 +24,29 @@ export function generateHandler(opts: IGenerateOpts) {
         engine: 'handlebars',
         template: 'swiftClient',
         mapping: {
-          functions: '/interfaces'
+          actions: '/interfaces'
         }
       },
-      appInterface: {
-        filename: 'src/types/app.ts',
-        engine: 'handlebars',
-        template: 'appInterface',
-        mapping: {
-          interfaces: '/interfaces'
-        }
-      },
-      functionInterface: {
+      actionInterface: {
         filename: {
           engine: 'handlebars',
-          template: 'src/types/functions/{{{name}}}.types.ts',
+          template: 'src/types/actions/{{{name}}}.types.ts',
           mapping: {
             name: '@key'
           }
         },
         engine: 'handlebars',
         iterator: '/interfaces',
-        template: 'functionInterface',
+        template: 'actionInterface',
         mapping: {
           interfaces: '@value',
           name: '@key'
         }
       },
-      functionsBarrel: {
-        filename: 'src/types/functions/index.ts',
+      actionsBarrel: {
+        filename: 'src/types/actions/index.ts',
         engine: 'handlebars',
-        template: 'functionsBarrel',
+        template: 'actionsBarrel',
         mapping: {
           interfaces: '/interfaces'
         }
@@ -69,14 +61,11 @@ export function generateHandler(opts: IGenerateOpts) {
     schemas: {},
     specs: opts.specs,
     templates: {
-      appInterface: {
-        template: fs.readFileSync(`${__dirname}/../../bin/templates/appInterface.hbs`, 'utf8')
+      actionInterface: {
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/actionInterface.hbs`, 'utf8')
       },
-      functionInterface: {
-        template: fs.readFileSync(`${__dirname}/../../bin/templates/functionInterface.hbs`, 'utf8')
-      },
-      functionsBarrel: {
-        template: fs.readFileSync(`${__dirname}/../../bin/templates/functionsBarrel.hbs`, 'utf8')
+      actionsBarrel: {
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/actionsBarrel.hbs`, 'utf8')
       },
       interfacesBarrel: {
         template: fs.readFileSync(`${__dirname}/../../bin/templates/interfacesBarrel.hbs`, 'utf8')
