@@ -129,10 +129,10 @@ export function generateHandler(opts: IGenerateOpts) {
 }
 
 const interfaces: any = {};
-const items = fs.readdirSync('./src/actions')
+const items = fs.readdirSync('./methods')
   .filter(item => /\.ts$/i.test(item));
 items.forEach((item) => {
-  const interfaceObject = require(path.normalize(`${process.cwd()}/src/actions/${item}`));
+  const interfaceObject = require(path.normalize(`${process.cwd()}/methods/${item}`));
   Object.keys(interfaceObject).forEach((key) => {
     const name = Case.camel(key).replace(/Action$/, '');
     interfaces[name] = new interfaceObject[key]().schema;
