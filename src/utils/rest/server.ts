@@ -2,6 +2,7 @@ import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import { Express } from 'express';
 import * as http from 'http';
+import * as session from 'express-session';
 import * as url from 'url';
 
 import { configs } from '../../configs';
@@ -91,53 +92,64 @@ export class RestServer {
           res.setHeader('Access-Control-Allow-Origin', origin);
         }
         res.setHeader('Access-Control-Allow-Credentials', 'true');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-        res.setHeader('Access-Control-Allow-Methods', 'GET,PATCH,PUT,DELETE,POST,OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+        res.setHeader('Access-Control-Allow-Methods', 'GET,PATCH,PUT,DELETE,POST,OPTIONS,HEAD');
         res.setHeader('Content-Type', 'application/json');
         next();
       });
+      this.express.use(session({
+        secret: '6ff70bff-aed3-42c1-acf5-74a63ea5e008',
+        resave: false,
+        saveUninitialized: true
+      }));
 
       this.express.get('/', (req, res) => {
         res.status(200).send({});
       });
 
-      Object.keys(this.paths).forEach(functionName => {
-        const action = this.paths[functionName];
+      Object.keys(this.paths).forEach(uri => {
+        const methods = this.paths[uri];
+        Object.keys(methods).forEach(method => {
+          const operation = methods[method];
+          (this.express as any)[method](
+            uri,
+            async (req: express.Request, res: express.Response) => {
+              let response: any;
+              let statusCode: number;
 
-        this.express.post(
-          `/${functionName}`,
-          async (req: express.Request, res: express.Response) => {
-            let response: any;
-            let statusCode: number;
+              try {
+                const handler = loadHandler(operation);
+                response = await handler(req);
+                statusCode = response.statusCode || 200;
 
-            try {
-              const handler = loadHandler(action);
-              response = await handler(req.body);
-              statusCode = 200;
+              } catch (error) {
+                // known error
+                if (this.knownErrors.find(knownError => error instanceof knownError)) {
+                  response = {
+                    body: {
+                      name: error.name,
+                      message: error.message
+                    }
+                  };
+                  statusCode = error.statusCode || 400;
+                // unknown error
+                } else {
+                  response = {
+                    body: {
+                      name: 'UnknownError',
+                      message: 'Server encountered an unexpected error'
+                    }
+                  };
+                  statusCode = 500;
 
-            } catch (error) {
-              // known error
-              if (this.knownErrors.find(knownError => error instanceof knownError)) {
-                response = {
-                  name: error.name,
-                  message: error.message
-                };
-                statusCode = 400;
-              // unknown error
-              } else {
-                response = {
-                  name: 'UnknownError',
-                  message: 'Server encountered an unexpected error'
-                };
-                statusCode = 500;
-
-                console.log('INTERNAL ERROR -', error);
+                  console.log('INTERNAL ERROR -', error);
+                }
               }
-            }
 
-            res.status(statusCode).send(response);
-          }
-        );
+              res.status(statusCode).send(response.body);
+            }
+          );
+        });
       });
 
       const serverUrl = url.parse(this.url);
