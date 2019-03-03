@@ -1,6 +1,6 @@
-import { ISchema } from '../interfaces';
+import { ISchema } from '../../interfaces';
 
-export interface IAction {
+export interface IRpcAction {
   context: any;
   handler: Function;
   schema: {
@@ -9,19 +9,19 @@ export interface IAction {
   };
 }
 
-export interface IActionArgs {
+export interface IRpcActionArgs {
   context?: any;
   handler?: any;
   schema?: any;
 }
 
-export class Action implements IAction {
+export class RpcAction implements IRpcAction {
   context: any = {};
   schema: any = {};
 
   async handler(): Promise<any> {}
 
-  constructor(args?: IActionArgs) {
+  constructor(args?: IRpcActionArgs) {
     if (args && args.context !== undefined) {
       this.context = args.context;
     }

@@ -4,14 +4,15 @@ import { Express } from 'express';
 import * as http from 'http';
 import * as url from 'url';
 
-import { configs } from './configs';
-import { loadHandler } from './utils';
+import { configs } from '../../configs';
+import { loadHandler } from '..';
 
-interface IServerOpts {
-  actions?: any;
+interface IRestServerOpts {
   environment?: string;
   enableLogging?: boolean;
   knownErrors?: { new(): Error }[];
+  paths?: any;
+  operations?: any;
   onLoad?: Function;
   onStart?: Function;
   onStop?: Function;
@@ -19,11 +20,12 @@ interface IServerOpts {
   url?: string;
 }
 
-export class Server {
-  actions: any = {};
+export class RestServer {
   context: any = {};
   express: Express;
   listener: http.Server;
+  operations: any = {};
+  paths: any = {};
 
   onLoad: Function;
   onStart: Function;
@@ -35,10 +37,7 @@ export class Server {
   schemas: any = {};
   url = configs.url || 'http://localhost:5000';
 
-  constructor(opts?: IServerOpts) {
-    if (opts && opts.actions !== undefined) {
-      this.actions = opts.actions;
-    }
+  constructor(opts?: IRestServerOpts) {
     if (opts && opts.environment !== undefined) {
       this.environment = opts.environment;
     }
@@ -53,6 +52,9 @@ export class Server {
     }
     if (opts && opts.onStop !== undefined) {
       this.onStop = opts.onStop;
+    }
+    if (opts && opts.operations !== undefined) {
+      this.operations = opts.operations;
     }
     if (opts && opts.schemas !== undefined) {
       this.schemas = opts.schemas;
@@ -99,8 +101,8 @@ export class Server {
         res.status(200).send({});
       });
 
-      Object.keys(this.actions).forEach(functionName => {
-        const action = this.actions[functionName];
+      Object.keys(this.paths).forEach(functionName => {
+        const action = this.paths[functionName];
 
         this.express.post(
           `/${functionName}`,
