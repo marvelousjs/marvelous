@@ -1,6 +1,6 @@
 import { ISchema } from '../../interfaces';
 
-export interface IRestPath {
+export interface IGatewayPath {
   context: any;
   handler: Function;
   schema: {
@@ -9,19 +9,19 @@ export interface IRestPath {
   };
 }
 
-export interface IRestPathArgs {
+export interface IGatewayPathArgs {
   context?: any;
   handler?: any;
   schema?: any;
 }
 
-export class RestPath implements IRestPath {
+export class GatewayPath implements IGatewayPath {
   context: any = {};
   schema: any = {};
 
   async handler(): Promise<any> {}
 
-  constructor(args?: IRestPathArgs) {
+  constructor(args?: IGatewayPathArgs) {
     if (args && args.context !== undefined) {
       this.context = args.context;
     }
