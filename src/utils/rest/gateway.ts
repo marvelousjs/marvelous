@@ -2,16 +2,18 @@ import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import { Express } from 'express';
 import * as http from 'http';
+import * as session from 'express-session';
 import * as url from 'url';
 
 import { configs } from '../../configs';
 import { loadHandler } from '..';
 
-interface IRpcServerOpts {
-  actions?: any;
+interface IGatewayOpts {
   environment?: string;
   enableLogging?: boolean;
   knownErrors?: { new(): Error }[];
+  paths?: any;
+  operations?: any;
   onLoad?: Function;
   onStart?: Function;
   onStop?: Function;
@@ -19,11 +21,12 @@ interface IRpcServerOpts {
   url?: string;
 }
 
-export class RpcServer {
-  actions: any = {};
+export class Gateway {
   context: any = {};
   express: Express;
   listener: http.Server;
+  operations: any = {};
+  paths: any = {};
 
   onLoad: Function;
   onStart: Function;
@@ -35,10 +38,7 @@ export class RpcServer {
   schemas: any = {};
   url = configs.url || 'http://localhost:5000';
 
-  constructor(opts?: IRpcServerOpts) {
-    if (opts && opts.actions !== undefined) {
-      this.actions = opts.actions;
-    }
+  constructor(opts?: IGatewayOpts) {
     if (opts && opts.environment !== undefined) {
       this.environment = opts.environment;
     }
@@ -53,6 +53,9 @@ export class RpcServer {
     }
     if (opts && opts.onStop !== undefined) {
       this.onStop = opts.onStop;
+    }
+    if (opts && opts.operations !== undefined) {
+      this.operations = opts.operations;
     }
     if (opts && opts.schemas !== undefined) {
       this.schemas = opts.schemas;
@@ -94,48 +97,59 @@ export class RpcServer {
         res.setHeader('Content-Type', 'application/json');
         next();
       });
+      this.express.use(session({
+        secret: '6ff70bff-aed3-42c1-acf5-74a63ea5e008',
+        resave: false,
+        saveUninitialized: true
+      }));
 
       this.express.get('/', (req, res) => {
         res.status(200).send({});
       });
 
-      Object.keys(this.actions).forEach(functionName => {
-        const action = this.actions[functionName];
+      Object.keys(this.paths).forEach(uri => {
+        const methods = this.paths[uri];
+        Object.keys(methods).forEach(method => {
+          const operation = methods[method];
+          (this.express as any)[method](
+            uri,
+            async (req: express.Request, res: express.Response) => {
+              let response: any;
+              let statusCode: number;
 
-        this.express.post(
-          `/${functionName}`,
-          async (req: express.Request, res: express.Response) => {
-            let response: any;
-            let statusCode: number;
+              try {
+                const handler = loadHandler(operation);
+                response = await handler(req);
+                statusCode = response.statusCode || 200;
 
-            try {
-              const handler = loadHandler(action);
-              response = await handler(req.body);
-              statusCode = 200;
+              } catch (error) {
+                // known error
+                if (this.knownErrors.find(knownError => error instanceof knownError)) {
+                  response = {
+                    body: {
+                      name: error.name,
+                      message: error.message
+                    }
+                  };
+                  statusCode = error.statusCode || 400;
+                // unknown error
+                } else {
+                  response = {
+                    body: {
+                      name: 'UnknownError',
+                      message: 'Server encountered an unexpected error'
+                    }
+                  };
+                  statusCode = 500;
 
-            } catch (error) {
-              // known error
-              if (this.knownErrors.find(knownError => error instanceof knownError)) {
-                response = {
-                  name: error.name,
-                  message: error.message
-                };
-                statusCode = 400;
-              // unknown error
-              } else {
-                response = {
-                  name: 'UnknownError',
-                  message: 'Server encountered an unexpected error'
-                };
-                statusCode = 500;
-
-                console.log('INTERNAL ERROR -', error);
+                  console.log('INTERNAL ERROR -', error);
+                }
               }
-            }
 
-            res.status(statusCode).send(response);
-          }
-        );
+              res.status(statusCode).send(response.body);
+            }
+          );
+        });
       });
 
       const serverUrl = url.parse(this.url);
