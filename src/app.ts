@@ -1,3 +1,3 @@
-export * from './errors';
+export * from './classes';
 export * from './interfaces';
 export * from './utils';

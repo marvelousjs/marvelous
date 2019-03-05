@@ -1,1 +1,2 @@
-export * from './validation';
+export * from './ValidationGatewayError';
+export * from './ValidationServiceError';

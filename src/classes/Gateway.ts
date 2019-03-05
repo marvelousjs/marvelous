@@ -2,28 +2,31 @@ import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import { Express } from 'express';
 import * as http from 'http';
+import * as session from 'express-session';
 import * as url from 'url';
 
-import { configs } from '../../configs';
-import { loadServiceHandler } from '..';
+import { configs } from '../configs';
+import { loadGatewayHandler } from '../utils';
 
-interface IServiceOpts {
-  calls?: any;
+import { GatewayRoute } from './GatewayRoute';
+
+interface IGatewayOpts {
   environment?: string;
   enableLogging?: boolean;
   knownErrors?: { new(): Error }[];
   onLoad?: Function;
   onStart?: Function;
   onStop?: Function;
+  routes?: { new(): GatewayRoute }[];
   schemas?: any;
   url?: string;
 }
 
-export class Service {
-  calls: any = {};
+export class Gateway {
   context: any = {};
   express: Express;
   listener: http.Server;
+  routes: { new(): GatewayRoute }[] = [];
 
   onLoad: Function;
   onStart: Function;
@@ -35,10 +38,7 @@ export class Service {
   schemas: any = {};
   url = configs.url || 'http://localhost:5000';
 
-  constructor(opts?: IServiceOpts) {
-    if (opts && opts.calls !== undefined) {
-      this.calls = opts.calls;
-    }
+  constructor(opts?: IGatewayOpts) {
     if (opts && opts.environment !== undefined) {
       this.environment = opts.environment;
     }
@@ -94,48 +94,59 @@ export class Service {
         res.setHeader('Content-Type', 'application/json');
         next();
       });
+      this.express.use(session({
+        secret: '6ff70bff-aed3-42c1-acf5-74a63ea5e008',
+        resave: false,
+        saveUninitialized: true
+      }));
 
       this.express.get('/', (req, res) => {
         res.status(200).send({});
       });
 
-      Object.keys(this.calls).forEach(functionName => {
-        const call = this.calls[functionName];
+      this.routes.forEach((Route: any) => {
+        const route: GatewayRoute = new Route();
+        Object.keys(route.methods).forEach(method => {
+          const operation = (route.methods as any)[method];
+          (this.express as any)[method](
+            route.uri,
+            async (req: express.Request, res: express.Response) => {
+              let response: any;
+              let statusCode: number;
+              
+              try {
+                const handler = loadGatewayHandler(operation);
+                response = await handler(req);
+                statusCode = response.statusCode || 200;
 
-        this.express.post(
-          `/${functionName}`,
-          async (req: express.Request, res: express.Response) => {
-            let response: any;
-            let statusCode: number;
+              } catch (error) {
+                // known error
+                if (this.knownErrors.find(knownError => error instanceof knownError)) {
+                  response = {
+                    body: {
+                      name: error.name,
+                      message: error.message
+                    }
+                  };
+                  statusCode = error.statusCode || 400;
+                // unknown error
+                } else {
+                  response = {
+                    body: {
+                      name: 'UnknownGatewayError',
+                      message: 'Server encountered an unexpected error'
+                    }
+                  };
+                  statusCode = 500;
 
-            try {
-              const handler = loadServiceHandler(call);
-              response = await handler(req.body);
-              statusCode = 200;
-
-            } catch (error) {
-              // known error
-              if (this.knownErrors.find(knownError => error instanceof knownError)) {
-                response = {
-                  name: error.name,
-                  message: error.message
-                };
-                statusCode = 400;
-              // unknown error
-              } else {
-                response = {
-                  name: 'UnknownError',
-                  message: 'Server encountered an unexpected error'
-                };
-                statusCode = 500;
-
-                console.log('INTERNAL SERVICE ERROR -', error);
+                  console.log('INTERNAL GATEWAY ERROR -', error);
+                }
               }
-            }
 
-            res.status(statusCode).send(response);
-          }
-        );
+              res.status(statusCode).send(response.body);
+            }
+          );
+        });
       });
 
       const serverUrl = url.parse(this.url);

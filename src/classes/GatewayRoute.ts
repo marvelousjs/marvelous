@@ -1,4 +1,4 @@
-import { GatewayMethod } from './method';
+import { GatewayMethod } from './GatewayMethod';
 
 export interface IGatewayRoute {
   uri: string;

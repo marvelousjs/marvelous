@@ -1,2 +1,2 @@
-export * from './gateway';
-export * from './service';
+export * from './loadGatewayHandler';
+export * from './loadServiceHandler';
