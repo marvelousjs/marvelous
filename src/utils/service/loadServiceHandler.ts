@@ -1,12 +1,12 @@
 import * as validator from 'is-my-json-valid';
 
-import { ValidationError } from '../errors';
+import { ValidationError } from '../../errors';
 
-export interface ILoadHandlerOpts {
+export interface ILoadServiceHandlerOpts {
   enableLogging?: boolean;
 }
 
-export function loadHandler(callClass: any, opts: ILoadHandlerOpts = {}) {
+export function loadServiceHandler(callClass: any, opts: ILoadServiceHandlerOpts = {}) {
   const call = new callClass();
 
   return async (request: any = {}) => {

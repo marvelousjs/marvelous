@@ -3,9 +3,9 @@
  * any manual changes to this file will be overwritten with the "mvs" command
  */
 
-import { loadHandler } from 'marvelous';
+import { loadServiceHandler } from 'marvelous';
 
 import { {{{case name 'pascal'}}}Call } from '../../calls';
 import { I{{{case name 'pascal'}}}Handler } from '../types';
 
-export const {{{case name 'camel'}}}Handler: I{{{case name 'pascal'}}}Handler = loadHandler({{{case name 'pascal'}}}Call);
+export const {{{case name 'camel'}}}Handler: I{{{case name 'pascal'}}}Handler = loadServiceHandler({{{case name 'pascal'}}}Call);

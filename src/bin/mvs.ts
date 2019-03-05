@@ -21,7 +21,7 @@ export function generateHandler(opts: IGenerateOpts) {
       engine: 'handlebars',
       template: 'gatewayTsClient',
       mapping: {
-        paths: '/interfaces'
+        operations: '/interfaces'
       }
     },
     swiftClient: {
@@ -29,29 +29,29 @@ export function generateHandler(opts: IGenerateOpts) {
       engine: 'handlebars',
       template: 'gatewaySwiftClient',
       mapping: {
-        paths: '/interfaces'
+        operations: '/interfaces'
       }
     },
-    pathInterface: {
+    operationInterface: {
       filename: {
         engine: 'handlebars',
-        template: `${opts.path}/.auto/types/paths/{{{name}}}.types.ts`,
+        template: `${opts.path}/.auto/types/operations/{{{name}}}.types.ts`,
         mapping: {
           name: '@key'
         }
       },
       engine: 'handlebars',
       iterator: '/interfaces',
-      template: 'gatewayPathInterface',
+      template: 'gatewayOperationInterface',
       mapping: {
         interfaces: '@value',
         name: '@key'
       }
     },
-    pathsBarrel: {
-      filename: `${opts.path}/.auto/types/paths/index.ts`,
+    operationsBarrel: {
+      filename: `${opts.path}/.auto/types/operations/index.ts`,
       engine: 'handlebars',
-      template: 'gatewayPathsBarrel',
+      template: 'gatewayOperationsBarrel',
       mapping: {
         interfaces: '/interfaces'
       }
@@ -170,34 +170,34 @@ export function generateHandler(opts: IGenerateOpts) {
     specs: opts.specs,
     templates: {
       callInterface: {
-        template: fs.readFileSync(`${__dirname}/../../bin/templates/callInterface.hbs`, 'utf8')
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/service/callInterface.hbs`, 'utf8')
       },
       callsBarrel: {
-        template: fs.readFileSync(`${__dirname}/../../bin/templates/callsBarrel.hbs`, 'utf8')
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/service/callsBarrel.hbs`, 'utf8')
       },
       autoBarrel: {
-        template: fs.readFileSync(`${__dirname}/../../bin/templates/autoBarrel.hbs`, 'utf8')
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/service/autoBarrel.hbs`, 'utf8')
       },
       handlerInterface: {
-        template: fs.readFileSync(`${__dirname}/../../bin/templates/handlerInterface.hbs`, 'utf8')
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/service/handlerInterface.hbs`, 'utf8')
       },
       handlersBarrel: {
-        template: fs.readFileSync(`${__dirname}/../../bin/templates/handlersBarrel.hbs`, 'utf8')
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/service/handlersBarrel.hbs`, 'utf8')
       },
       interfacesBarrel: {
-        template: fs.readFileSync(`${__dirname}/../../bin/templates/interfacesBarrel.hbs`, 'utf8')
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/service/interfacesBarrel.hbs`, 'utf8')
       },
       swiftClient: {
-        template: fs.readFileSync(`${__dirname}/../../bin/templates/swiftClient.hbs`, 'utf8')
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/service/swiftClient.hbs`, 'utf8')
       },
       tsClient: {
-        template: fs.readFileSync(`${__dirname}/../../bin/templates/tsClient.hbs`, 'utf8')
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/service/tsClient.hbs`, 'utf8')
       },
-      gatewayPathInterface: {
-        template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/pathInterface.hbs`, 'utf8')
+      gatewayOperationInterface: {
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/operationInterface.hbs`, 'utf8')
       },
-      gatewayPathsBarrel: {
-        template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/pathsBarrel.hbs`, 'utf8')
+      gatewayOperationsBarrel: {
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/operationsBarrel.hbs`, 'utf8')
       },
       gatewayAutoBarrel: {
         template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/autoBarrel.hbs`, 'utf8')
@@ -235,13 +235,13 @@ const gateways = fs.readdirSync('./src/gateways')
   .filter(gateway => fs.lstatSync(`./src/gateways/${gateway}`).isDirectory());
 gateways.forEach((gateway) => {
   const interfaces: any = {};
-  const gatewayPaths = fs.readdirSync(`./src/gateways/${gateway}/paths`)
-    .filter(gatewayPath => !/\.ts$/i.test(gatewayPath));
-  gatewayPaths.forEach((gatewayPath) => {
-    const methods = fs.readdirSync(`./src/gateways/${gateway}/paths/${gatewayPath}`)
+  const gatewayOperations = fs.readdirSync(`./src/gateways/${gateway}/operations`)
+    .filter(gatewayOperation => !/\.ts$/i.test(gatewayOperation));
+  gatewayOperations.forEach((gatewayOperation) => {
+    const methods = fs.readdirSync(`./src/gateways/${gateway}/operations/${gatewayOperation}`)
       .filter(method => !/\.ts$/i.test(method));
     methods.forEach((method) => {
-      const interfaceObject = require(path.normalize(`${process.cwd()}/src/gateways/${gateway}/paths/${gatewayPath}/${method}/${method}.schema`));
+      const interfaceObject = require(path.normalize(`${process.cwd()}/src/gateways/${gateway}/operations/${gatewayOperation}/${method}/${method}.schema`));
       Object.keys(interfaceObject).forEach((key) => {
         const name = Case.camel(key).replace(/Schema$/, '');
         interfaces[name] = interfaceObject[key];

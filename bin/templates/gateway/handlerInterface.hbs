@@ -3,9 +3,9 @@
  * any manual changes to this file will be overwritten with the "mvs" command
  */
 
-import { loadHandler } from 'marvelous';
+import { loadGatewayHandler } from 'marvelous';
 
 import { I{{{case name 'pascal'}}}Handler } from '../types';
-import { {{{case name 'pascal'}}}Path } from '../../paths';
+import { {{{case name 'pascal'}}}Operation } from '../../operations';
 
-export const {{{case name 'camel'}}}Handler: I{{{case name 'pascal'}}}Handler = loadHandler({{{case name 'pascal'}}}Path);
+export const {{{case name 'camel'}}}Handler: I{{{case name 'pascal'}}}Handler = loadGatewayHandler({{{case name 'pascal'}}}Operation);

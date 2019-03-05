@@ -1,3 +1,2 @@
-export * from './loadHandler';
-export * from './rest';
-export * from './rpc';
+export * from './gateway';
+export * from './service';
