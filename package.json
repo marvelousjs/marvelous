@@ -15,7 +15,8 @@
     "express": "^4.16.4",
     "express-session": "^1.15.6",
     "fs-extra": "^7.0.1",
-    "jazzdb": "^0.7.0"
+    "jazzdb": "^0.7.0",
+    "recursive-readdir": "^2.2.2"
   },
   "devDependencies": {
     "@types/express-session": "^1.15.12",

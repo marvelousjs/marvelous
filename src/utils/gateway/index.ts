@@ -1,3 +1,4 @@
 export * from './gateway';
 export * from './loadGatewayHandler';
-export * from './operation';
+export * from './method';
+export * from './route';

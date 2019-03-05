@@ -129,7 +129,7 @@ export class Service {
                 };
                 statusCode = 500;
 
-                console.log('INTERNAL ERROR -', error);
+                console.log('INTERNAL SERVICE ERROR -', error);
               }
             }
 

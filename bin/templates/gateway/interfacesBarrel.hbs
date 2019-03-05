@@ -3,4 +3,4 @@
  * any manual changes to this file will be overwritten with the "mvs" command
  */
 
-export * from './operations';
+export * from './routes';

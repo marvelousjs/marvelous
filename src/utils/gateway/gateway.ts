@@ -7,6 +7,7 @@ import * as url from 'url';
 
 import { configs } from '../../configs';
 import { loadGatewayHandler } from '..';
+import { GatewayRoute } from './route';
 
 interface IGatewayOpts {
   environment?: string;
@@ -15,35 +16,16 @@ interface IGatewayOpts {
   onLoad?: Function;
   onStart?: Function;
   onStop?: Function;
-  paths?: {
-    (uri: string): IGatewayOptsPath
-  };
+  routes?: { new(): GatewayRoute }[];
   schemas?: any;
   url?: string;
-}
-
-interface IGatewayOptsPath {
-  delete?: IGatewayOptsPathMethod;
-  get?: IGatewayOptsPathMethod;
-  options?: IGatewayOptsPathMethod;
-  patch?: IGatewayOptsPathMethod;
-  post?: IGatewayOptsPathMethod;
-  put?: IGatewayOptsPathMethod;
-}
-
-interface IGatewayOptsPathMethod {
-  description?: string;
-  operation?: Function;
-  summary?: string;
 }
 
 export class Gateway {
   context: any = {};
   express: Express;
   listener: http.Server;
-  paths: {
-    [uri: string]: IGatewayOptsPath
-  } = {};
+  routes: { new(): GatewayRoute }[] = [];
 
   onLoad: Function;
   onStart: Function;
@@ -121,12 +103,12 @@ export class Gateway {
         res.status(200).send({});
       });
 
-      Object.keys(this.paths).forEach(uri => {
-        const methods = this.paths[uri];
-        Object.keys(methods).forEach(method => {
-          const operation = (methods as any)[method].operation;
+      this.routes.forEach((Route: any) => {
+        const route: GatewayRoute = new Route();
+        Object.keys(route.methods).forEach(method => {
+          const operation = (route.methods as any)[method];
           (this.express as any)[method](
-            uri,
+            route.uri,
             async (req: express.Request, res: express.Response) => {
               let response: any;
               let statusCode: number;
@@ -156,7 +138,7 @@ export class Gateway {
                   };
                   statusCode = 500;
 
-                  console.log('INTERNAL ERROR -', error);
+                  console.log('INTERNAL GATEWAY ERROR -', error);
                 }
               }
 

@@ -1,6 +1,6 @@
 import { ISchema } from '../../interfaces';
 
-export interface IGatewayOperation {
+export interface IGatewayMethod {
   context: any;
   handler: Function;
   schema: {
@@ -9,19 +9,19 @@ export interface IGatewayOperation {
   };
 }
 
-export interface IGatewayOperationArgs {
+export interface IGatewayMethodArgs {
   context?: any;
   handler?: any;
   schema?: any;
 }
 
-export class GatewayOperation implements IGatewayOperation {
+export class GatewayMethod implements IGatewayMethod {
   context: any = {};
   schema: any = {};
 
   async handler(): Promise<any> {}
 
-  constructor(args?: IGatewayOperationArgs) {
+  constructor(args?: IGatewayMethodArgs) {
     if (args && args.context !== undefined) {
       this.context = args.context;
     }

@@ -21,7 +21,7 @@ export function generateHandler(opts: IGenerateOpts) {
       engine: 'handlebars',
       template: 'gatewayTsClient',
       mapping: {
-        operations: '/interfaces'
+        routes: '/interfaces'
       }
     },
     swiftClient: {
@@ -29,13 +29,13 @@ export function generateHandler(opts: IGenerateOpts) {
       engine: 'handlebars',
       template: 'gatewaySwiftClient',
       mapping: {
-        operations: '/interfaces'
+        routes: '/interfaces'
       }
     },
-    operationInterface: {
+    routeInterface: {
       filename: {
         engine: 'handlebars',
-        template: `${opts.path}/.auto/types/operations/{{{name}}}.types.ts`,
+        template: `${opts.path}/.auto/types/routes/{{{name}}}.types.ts`,
         mapping: {
           name: '@key'
         }
@@ -48,8 +48,8 @@ export function generateHandler(opts: IGenerateOpts) {
         name: '@key'
       }
     },
-    operationsBarrel: {
-      filename: `${opts.path}/.auto/types/operations/index.ts`,
+    routesBarrel: {
+      filename: `${opts.path}/.auto/types/routes/index.ts`,
       engine: 'handlebars',
       template: 'gatewayOperationsBarrel',
       mapping: {
@@ -194,10 +194,10 @@ export function generateHandler(opts: IGenerateOpts) {
         template: fs.readFileSync(`${__dirname}/../../bin/templates/service/tsClient.hbs`, 'utf8')
       },
       gatewayOperationInterface: {
-        template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/operationInterface.hbs`, 'utf8')
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/routeInterface.hbs`, 'utf8')
       },
       gatewayOperationsBarrel: {
-        template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/operationsBarrel.hbs`, 'utf8')
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/routesBarrel.hbs`, 'utf8')
       },
       gatewayAutoBarrel: {
         template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/autoBarrel.hbs`, 'utf8')
@@ -235,13 +235,16 @@ const gateways = fs.readdirSync('./src/gateways')
   .filter(gateway => fs.lstatSync(`./src/gateways/${gateway}`).isDirectory());
 gateways.forEach((gateway) => {
   const interfaces: any = {};
-  const gatewayOperations = fs.readdirSync(`./src/gateways/${gateway}/operations`)
+  const gatewayOperations = fs.readdirSync(`./src/gateways/${gateway}/routes`)
     .filter(gatewayOperation => !/\.ts$/i.test(gatewayOperation));
   gatewayOperations.forEach((gatewayOperation) => {
-    const methods = fs.readdirSync(`./src/gateways/${gateway}/operations/${gatewayOperation}`)
+    const methods = fs.readdirSync(`./src/gateways/${gateway}/routes/${gatewayOperation}`)
       .filter(method => !/\.ts$/i.test(method));
     methods.forEach((method) => {
-      const interfaceObject = require(path.normalize(`${process.cwd()}/src/gateways/${gateway}/operations/${gatewayOperation}/${method}/${method}.schema`));
+      const schemaItem = fs.readdirSync(`./src/gateways/${gateway}/routes/${gatewayOperation}/${method}`)
+        .filter(item => /\.schema\.ts$/i.test(item))[0];
+
+      const interfaceObject = require(path.normalize(`${process.cwd()}/src/gateways/${gateway}/routes/${gatewayOperation}/${method}/${schemaItem}`));
       Object.keys(interfaceObject).forEach((key) => {
         const name = Case.camel(key).replace(/Schema$/, '');
         interfaces[name] = interfaceObject[key];
@@ -265,7 +268,10 @@ services.forEach((service) => {
   const items = fs.readdirSync(`./src/services/${service}/calls`)
     .filter(item => !/\.ts$/i.test(item));
   items.forEach((item) => {
-    const interfaceObject = require(path.normalize(`${process.cwd()}/src/services/${service}/calls/${item}/${item}.schema`));
+    const schemaItem = fs.readdirSync(`./src/services/${service}/calls/${item}`)
+      .filter(item => /\.schema\.ts$/i.test(item))[0];
+
+    const interfaceObject = require(path.normalize(`${process.cwd()}/src/services/${service}/calls/${item}/${schemaItem}`));
     Object.keys(interfaceObject).forEach((key) => {
       const name = Case.camel(key).replace(/Schema$/, '');
       interfaces[name] = interfaceObject[key];

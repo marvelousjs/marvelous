@@ -11,12 +11,12 @@ interface IClientOpts {
 }
 
 interface IClient {
-  {{#each operations}}
+  {{#each routes}}
   {{{case @key 'camel'}}}: IClient{{{case @key 'pascal'}}}Function;
   {{/each}}
 }
 
-{{#each operations}}
+{{#each routes}}
 export interface IClient{{{case @key 'pascal'}}}Function {
   (request?: IClient{{{case @key 'pascal'}}}Request): Promise<IClient{{{case @key 'pascal'}}}Response>;
 }
@@ -78,7 +78,7 @@ export class Client implements IClient {
       this.url = opts.url;
     }
   }
-  {{#each operations}}
+  {{#each routes}}
 
   {{{case @key 'camel'}}}: IClient{{{case @key 'pascal'}}}Function = async req => {
     return handler(req, `${this.url}/{{{case @key 'camel'}}}`);
