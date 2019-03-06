@@ -1,0 +1,10 @@
+language: node_js
+node_js:
+  - "10"
+
+notifications:
+  email:
+    recipients:
+      - chris@austincodeshop.com
+    on_success: always
+    on_failure: always
