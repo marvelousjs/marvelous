@@ -70,15 +70,16 @@ export function generateHandler(opts: IGenerateOpts) {
       template: 'autoBarrel'
     },
     tsClient: {
-      filename: `${opts.path}/.auto/clients/client.ts`,
+      filename: `${opts.path}/.auto/clients/${Case.pascal(opts.name)}ServiceClient.ts`,
       engine: 'handlebars',
       template: 'tsClient',
       mapping: {
+        serviceName: opts.name,
         calls: '/interfaces'
       }
     },
     swiftClient: {
-      filename: `${opts.path}/.auto/clients/client.swift`,
+      filename: `${opts.path}/.auto/clients/${Case.pascal(opts.name)}ServiceClient.swift`,
       engine: 'handlebars',
       template: 'swiftClient',
       mapping: {
@@ -244,8 +245,11 @@ if (isGateway) {
     });
   });
 
+  const pkg = require(path.normalize(`${process.cwd()}/package.json`));
+  const gatewayName = Case.pascal(pkg.name.split('gateway-')[1]);
+
   generateHandler({
-    name: 'Some',
+    name: gatewayName,
     type: 'gateway',
     path: `./src`,
     specs: {
@@ -269,8 +273,11 @@ if (isService) {
     });
   });
 
+  const pkg = require(path.normalize(`${process.cwd()}/package.json`));
+  const serviceName = Case.pascal(pkg.name.split('service-')[1]);
+
   generateHandler({
-    name: 'Some',
+    name: serviceName,
     type: 'service',
     path: `./src`,
     specs: {

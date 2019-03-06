@@ -6,23 +6,23 @@
 import * as http from 'http';
 import * as url from 'url';
 
-interface IClientOpts {
+interface I{{{serviceName}}}ServiceClientOpts {
   url: string;
 }
 
-interface IClient {
+interface I{{{serviceName}}}ServiceClient {
   {{#each calls}}
-  {{{case @key 'camel'}}}: IClient{{{case @key 'pascal'}}}Function;
+  {{{case @key 'camel'}}}: I{{{../serviceName}}}ServiceClient{{{case @key 'pascal'}}}Function;
   {{/each}}
 }
 
 {{#each calls}}
-export interface IClient{{{case @key 'pascal'}}}Function {
-  (request?: IClient{{{case @key 'pascal'}}}Request): Promise<IClient{{{case @key 'pascal'}}}Response>;
+export interface I{{{../serviceName}}}ServiceClient{{{case @key 'pascal'}}}Function {
+  (request?: I{{{../serviceName}}}ServiceClient{{{case @key 'pascal'}}}Request): Promise<I{{{../serviceName}}}ServiceClient{{{case @key 'pascal'}}}Response>;
 }
 
 {{#each this}}
-{{{tsInterface (concat 'Client' (case @../key 'pascal') (case @key 'pascal')) this}}}
+{{{tsInterface (concat ../../serviceName 'ServiceClient' (case @../key 'pascal') (case @key 'pascal')) this}}}
 {{/each}}
 {{/each}}
 
@@ -70,17 +70,17 @@ async function handler(req: any = {}, urlString: string = ''): Promise<any> {
   });
 }
 
-export class Client implements IClient {
+export class {{{serviceName}}}ServiceClient implements I{{{serviceName}}}ServiceClient {
   url = 'http://localhost:5000';
 
-  constructor(opts?: IClientOpts) {
+  constructor(opts?: I{{{serviceName}}}ServiceClientOpts) {
     if (opts && opts.url !== undefined) {
       this.url = opts.url;
     }
   }
   {{#each calls}}
 
-  {{{case @key 'camel'}}}: IClient{{{case @key 'pascal'}}}Function = async req => {
+  {{{case @key 'camel'}}}: I{{{../serviceName}}}ServiceClient{{{case @key 'pascal'}}}Function = async req => {
     return handler(req, `${this.url}/{{{case @key 'camel'}}}`);
   };
   {{/each}}
