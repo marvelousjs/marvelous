@@ -2,7 +2,7 @@
 
 > the marvelous framework - microservices for node.js
 
-![microservices](https://files.readme.io/8205763-microservices.png)
+![microservices](https://files.readme.io/b4c990c-microservices.png)
 
 ## Sample Application
 

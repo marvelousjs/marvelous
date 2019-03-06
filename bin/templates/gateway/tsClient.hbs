@@ -6,39 +6,69 @@
 import * as http from 'http';
 import * as url from 'url';
 
-interface IClientOpts {
+interface I{{{case gatewayName 'pascal'}}}GatewayClientOpts {
   url: string;
 }
 
-interface IClient {
+interface I{{{case gatewayName 'pascal'}}}GatewayClient {
   {{#each routes}}
-  {{{case @key 'camel'}}}: IClient{{{case @key 'pascal'}}}Function;
+  '{{{./uri}}}': {
+    {{#each methods}}
+    {{{@key}}}: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}Function;
+    {{/each}}
+  };
   {{/each}}
 }
 
 {{#each routes}}
-export interface IClient{{{case @key 'pascal'}}}Function {
-  (request?: IClient{{{case @key 'pascal'}}}Request): Promise<IClient{{{case @key 'pascal'}}}Response>;
+{{#each methods}}
+export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}Function {
+  (request?: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}Request): Promise<I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}Response>;
 }
 
-{{#each this}}
-{{{tsInterface (concat 'Client' (case @../key 'pascal') (case @key 'pascal')) this}}}
-{{/each}}
-{{/each}}
+export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}Request {
+  {{#if request.body}}
+  body: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}RequestBody;
+  {{/if}}
+  {{#if request.params}}
+  params: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}RequestParams;
+  {{/if}}
+}
 
-async function handler(req: any = {}, urlString: string = ''): Promise<any> {
+export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}Response {
+  {{#if response.body}}
+  body: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}ResponseBody;
+  {{/if}}
+}
+
+{{#if request.body}}
+{{{tsInterface (concat (case ../../gatewayName 'pascal') 'GatewayClient' (case @key 'pascal') 'RequestBody') request.body}}}
+{{/if}}
+{{#if response.body}}
+{{{tsInterface (concat (case ../../gatewayName 'pascal') 'GatewayClient' (case @key 'pascal') 'ResponseBody') response.body}}}
+{{/if}}
+{{#if request.params}}
+{{{tsInterface (concat (case ../../gatewayName 'pascal') 'GatewayClient' (case @key 'pascal') 'RequestParams') request.params}}}
+{{/if}}
+{{/each}}
+{{/each}}
+async function handler(req: any = {}, urlString: string = '', method = 'get'): Promise<any> {
   return new Promise((resolve, reject) => {
     try {
-      const reqString = JSON.stringify(req);
+      const reqString = JSON.stringify(req.body || {});
       const urlParts = url.parse(urlString);
       
+      const pathname = urlParts.pathname.replace(/(:[a-z][^\/]+)/gi, (a, b) => {
+        return req.params[b.substr(1)] ? req.params[b.substr(1)] : b;
+      });
+
       const input = http.request(
         {
           protocol: urlParts.protocol,
           host: urlParts.hostname,
           port: urlParts.port,
-          path: urlParts.pathname,
-          method: 'POST',
+          path: pathname,
+          method,
           headers: {
             'Content-Type': 'application/json',
             'Content-Length': Buffer.byteLength(reqString)
@@ -52,11 +82,17 @@ async function handler(req: any = {}, urlString: string = ''): Promise<any> {
           });
 
           output.on('end', () => {
-            const response = JSON.parse(responseString) || {};
-            if (output.statusCode === 200) {
-              resolve(response);
+            const responseBody = JSON.parse(responseString) || {};
+            if (output.statusCode >= 200 || output.statusCode <= 299) {
+              resolve({
+                statusCode: output.statusCode,
+                body: responseBody
+              });
             } else {
-              reject(response);
+              reject({
+                statusCode: output.statusCode,
+                body: responseBody
+              });
             }
           });
         }
@@ -70,18 +106,26 @@ async function handler(req: any = {}, urlString: string = ''): Promise<any> {
   });
 }
 
-export class Client implements IClient {
+export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case gatewayName 'pascal'}}}GatewayClient {
   url = 'http://localhost:5000';
 
-  constructor(opts?: IClientOpts) {
+  constructor(opts?: I{{{case gatewayName 'pascal'}}}GatewayClientOpts) {
     if (opts && opts.url !== undefined) {
       this.url = opts.url;
     }
   }
   {{#each routes}}
 
-  {{{case @key 'camel'}}}: IClient{{{case @key 'pascal'}}}Function = async req => {
-    return handler(req, `${this.url}/{{{case @key 'camel'}}}`);
+  '{{{./uri}}}': {
+    {{#each methods}}
+    {{{@key}}}: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}Function;
+    {{/each}}
+  } = {
+    {{#each methods}}
+    {{{@key}}}: async (req) => {
+      return handler(req, `${this.url}{{{../uri}}}`, '{{{@key}}}');
+    }{{#unless @last}},{{/unless}}
+    {{/each}}
   };
   {{/each}}
 }

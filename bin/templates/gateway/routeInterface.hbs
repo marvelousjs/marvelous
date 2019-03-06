@@ -3,19 +3,35 @@
  * any manual changes to this file will be overwritten with the "mvs" command
  */
 
+{{#each route.methods}}
 export interface I{{{case name 'pascal'}}}Handler {
   (request?: I{{{case name 'pascal'}}}Request): Promise<I{{{case name 'pascal'}}}Response>;
 }
 
 export interface I{{{case name 'pascal'}}}Request {
+  {{#if request.body}}
   body: I{{{case name 'pascal'}}}RequestBody;
+  {{/if}}
+  {{#if request.params}}
+  params: I{{{case name 'pascal'}}}RequestParams;
+  {{/if}}
   session: any;
 }
 
 export interface I{{{case name 'pascal'}}}Response {
+  statusCode: number;
+  {{#if response.body}}
   body: I{{{case name 'pascal'}}}ResponseBody;
+  {{/if}}
 }
 
-{{#each interfaces}}
-{{{tsInterface (concat ../name (case @key 'pascal') 'Body') this}}}
+{{#if request.body}}
+{{{tsInterface (concat name 'RequestBody') request.body}}}
+{{/if}}
+{{#if request.params}}
+{{{tsInterface (concat name 'RequestParams') request.params}}}
+{{/if}}
+{{#if response.body}}
+{{{tsInterface (concat name 'ResponseBody') response.body}}}
+{{/if}}
 {{/each}}
