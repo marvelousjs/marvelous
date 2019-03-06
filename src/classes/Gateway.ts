@@ -18,12 +18,10 @@ interface IGatewayOpts {
   onStart?: Function;
   onStop?: Function;
   routes?: { new(): GatewayRoute }[];
-  schemas?: any;
   url?: string;
 }
 
 export class Gateway {
-  context: any = {};
   express: Express;
   listener: http.Server;
   routes: { new(): GatewayRoute }[] = [];
@@ -35,7 +33,6 @@ export class Gateway {
   environment = process.env.NODE_ENV;
   enableLogging = false;
   knownErrors: { new(): Error }[] = [];
-  schemas: any = {};
   url = configs.url || 'http://localhost:5000';
 
   constructor(opts?: IGatewayOpts) {
@@ -54,19 +51,12 @@ export class Gateway {
     if (opts && opts.onStop !== undefined) {
       this.onStop = opts.onStop;
     }
-    if (opts && opts.schemas !== undefined) {
-      this.schemas = opts.schemas;
-    }
     if (opts && opts.knownErrors !== undefined) {
       this.knownErrors = opts.knownErrors;
     }
     if (opts && opts.url !== undefined) {
       this.url = opts.url;
     }
-  }
-
-  setContext(context: any) {
-    this.context = context;
   }
 
   async load(cb?: Function) {

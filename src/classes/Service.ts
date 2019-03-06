@@ -15,13 +15,11 @@ interface IServiceOpts {
   onLoad?: Function;
   onStart?: Function;
   onStop?: Function;
-  schemas?: any;
   url?: string;
 }
 
 export class Service {
   calls: any = {};
-  context: any = {};
   express: Express;
   listener: http.Server;
 
@@ -32,7 +30,6 @@ export class Service {
   environment = process.env.NODE_ENV;
   enableLogging = false;
   knownErrors: { new(): Error }[] = [];
-  schemas: any = {};
   url = configs.url || 'http://localhost:5000';
 
   constructor(opts?: IServiceOpts) {
@@ -54,19 +51,12 @@ export class Service {
     if (opts && opts.onStop !== undefined) {
       this.onStop = opts.onStop;
     }
-    if (opts && opts.schemas !== undefined) {
-      this.schemas = opts.schemas;
-    }
     if (opts && opts.knownErrors !== undefined) {
       this.knownErrors = opts.knownErrors;
     }
     if (opts && opts.url !== undefined) {
       this.url = opts.url;
     }
-  }
-
-  setContext(context: any) {
-    this.context = context;
   }
 
   async load(cb?: Function) {
