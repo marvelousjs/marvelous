@@ -203,14 +203,15 @@ export function generateHandler(opts: IGenerateOpts) {
   // console.log(JSON.stringify(items, null, 2));
 }
 
-const gateways = fs.readdirSync('./src/gateways')
-  .filter(gateway => fs.lstatSync(`./src/gateways/${gateway}`).isDirectory());
-gateways.forEach((gateway) => {
+const isGateway = fs.existsSync('./src/routes');
+const isService = fs.existsSync('./src/calls');
+
+if (isGateway) {
   const interfaces: any = {};
-  const gatewayRoutes = fs.readdirSync(`./src/gateways/${gateway}/routes`)
+  const gatewayRoutes = fs.readdirSync(`./src/routes`)
     .filter(gatewayRoute => !/\.ts$/i.test(gatewayRoute));
   gatewayRoutes.forEach((gatewayRoute) => {
-    const routeObject = require(path.normalize(`${process.cwd()}/src/gateways/${gateway}/routes/${gatewayRoute}`));
+    const routeObject = require(path.normalize(`${process.cwd()}/src/routes/${gatewayRoute}`));
     let uri = '';
     Object.keys(routeObject).forEach((key) => {
       if (routeObject[key] instanceof Function) {
@@ -220,13 +221,13 @@ gateways.forEach((gateway) => {
         }
       }
     });
-    const methods = fs.readdirSync(`./src/gateways/${gateway}/routes/${gatewayRoute}`)
+    const methods = fs.readdirSync(`./src/routes/${gatewayRoute}`)
       .filter(method => !/\.ts$/i.test(method));
     methods.forEach((method) => {
-      const schemaItem = fs.readdirSync(`./src/gateways/${gateway}/routes/${gatewayRoute}/${method}`)
+      const schemaItem = fs.readdirSync(`./src/routes/${gatewayRoute}/${method}`)
         .filter(item => /\.schema\.ts$/i.test(item))[0];
 
-      const interfaceObject = require(path.normalize(`${process.cwd()}/src/gateways/${gateway}/routes/${gatewayRoute}/${method}/${schemaItem}`));
+      const interfaceObject = require(path.normalize(`${process.cwd()}/src/routes/${gatewayRoute}/${method}/${schemaItem}`));
       Object.keys(interfaceObject).forEach((key) => {
         const name = Case.camel(key).replace(/Schema$/, '');
         if (!interfaces[gatewayRoute]) {
@@ -244,26 +245,24 @@ gateways.forEach((gateway) => {
   });
 
   generateHandler({
-    name: gateway,
+    name: 'Some',
     type: 'gateway',
-    path: `./src/gateways/${gateway}`,
+    path: `./src`,
     specs: {
       interfaces
     }
   });
-});
+}
 
-const services = fs.readdirSync('./src/services')
-  .filter(service => fs.lstatSync(`./src/services/${service}`).isDirectory())
-services.forEach((service) => {
+if (isService) {
   const interfaces: any = {};
-  const items = fs.readdirSync(`./src/services/${service}/calls`)
+  const items = fs.readdirSync(`./src/calls`)
     .filter(item => !/\.ts$/i.test(item));
   items.forEach((item) => {
-    const schemaItem = fs.readdirSync(`./src/services/${service}/calls/${item}`)
+    const schemaItem = fs.readdirSync(`./src/calls/${item}`)
       .filter(item => /\.schema\.ts$/i.test(item))[0];
 
-    const interfaceObject = require(path.normalize(`${process.cwd()}/src/services/${service}/calls/${item}/${schemaItem}`));
+    const interfaceObject = require(path.normalize(`${process.cwd()}/src/calls/${item}/${schemaItem}`));
     Object.keys(interfaceObject).forEach((key) => {
       const name = Case.camel(key).replace(/Schema$/, '');
       interfaces[name] = interfaceObject[key];
@@ -271,11 +270,90 @@ services.forEach((service) => {
   });
 
   generateHandler({
-    name: service,
+    name: 'Some',
     type: 'service',
-    path: `./src/services/${service}`,
+    path: `./src`,
     specs: {
       interfaces
     }
   });
-});
+}
+
+if (!isGateway && !isService) {
+  const gateways = fs.readdirSync('./src/gateways')
+    .filter(gateway => fs.lstatSync(`./src/gateways/${gateway}`).isDirectory());
+  gateways.forEach((gateway) => {
+    const interfaces: any = {};
+    const gatewayRoutes = fs.readdirSync(`./src/gateways/${gateway}/routes`)
+      .filter(gatewayRoute => !/\.ts$/i.test(gatewayRoute));
+    gatewayRoutes.forEach((gatewayRoute) => {
+      const routeObject = require(path.normalize(`${process.cwd()}/src/gateways/${gateway}/routes/${gatewayRoute}`));
+      let uri = '';
+      Object.keys(routeObject).forEach((key) => {
+        if (routeObject[key] instanceof Function) {
+          const route = new routeObject[key]();
+          if (route.uri) {
+            uri = route.uri;
+          }
+        }
+      });
+      const methods = fs.readdirSync(`./src/gateways/${gateway}/routes/${gatewayRoute}`)
+        .filter(method => !/\.ts$/i.test(method));
+      methods.forEach((method) => {
+        const schemaItem = fs.readdirSync(`./src/gateways/${gateway}/routes/${gatewayRoute}/${method}`)
+          .filter(item => /\.schema\.ts$/i.test(item))[0];
+
+        const interfaceObject = require(path.normalize(`${process.cwd()}/src/gateways/${gateway}/routes/${gatewayRoute}/${method}/${schemaItem}`));
+        Object.keys(interfaceObject).forEach((key) => {
+          const name = Case.camel(key).replace(/Schema$/, '');
+          if (!interfaces[gatewayRoute]) {
+            interfaces[gatewayRoute] = {
+              methods: {},
+              uri
+            };
+          }
+          interfaces[gatewayRoute].methods[method] = {
+            ...interfaceObject[key],
+            name
+          };
+        });
+      });
+    });
+
+    generateHandler({
+      name: gateway,
+      type: 'gateway',
+      path: `./src/gateways/${gateway}`,
+      specs: {
+        interfaces
+      }
+    });
+  });
+
+  const services = fs.readdirSync('./src/services')
+    .filter(service => fs.lstatSync(`./src/services/${service}`).isDirectory())
+  services.forEach((service) => {
+    const interfaces: any = {};
+    const items = fs.readdirSync(`./src/services/${service}/calls`)
+      .filter(item => !/\.ts$/i.test(item));
+    items.forEach((item) => {
+      const schemaItem = fs.readdirSync(`./src/services/${service}/calls/${item}`)
+        .filter(item => /\.schema\.ts$/i.test(item))[0];
+
+      const interfaceObject = require(path.normalize(`${process.cwd()}/src/services/${service}/calls/${item}/${schemaItem}`));
+      Object.keys(interfaceObject).forEach((key) => {
+        const name = Case.camel(key).replace(/Schema$/, '');
+        interfaces[name] = interfaceObject[key];
+      });
+    });
+
+    generateHandler({
+      name: service,
+      type: 'service',
+      path: `./src/services/${service}`,
+      specs: {
+        interfaces
+      }
+    });
+  });
+}
