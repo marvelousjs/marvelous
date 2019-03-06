@@ -4,6 +4,7 @@ import * as path from 'path';
 import zapp from '@zappjs/core';
 
 interface IGenerateOpts {
+  packageName: string;
   name: string,
   path: string;
   specs: any;
@@ -18,7 +19,7 @@ export function generateHandler(opts: IGenerateOpts) {
       template: 'gatewayAutoBarrel'
     },
     tsClient: {
-      filename: `${opts.path}/.auto/clients/${Case.pascal(opts.name)}GatewayClient.ts`,
+      filename: `${opts.path}/.auto/clients/src/${Case.pascal(opts.name)}GatewayClient.ts`,
       engine: 'handlebars',
       template: 'gatewayTsClient',
       mapping: {
@@ -26,14 +27,35 @@ export function generateHandler(opts: IGenerateOpts) {
         routes: '/interfaces'
       }
     },
-    swiftClient: {
-      filename: `${opts.path}/.auto/clients/${Case.pascal(opts.name)}GatewayClient.swift`,
+    clientIndex: {
+      filename: `${opts.path}/.auto/clients/src/index.ts`,
       engine: 'handlebars',
-      template: 'gatewaySwiftClient',
+      template: 'gatewayClientIndex',
       mapping: {
-        routes: '/interfaces'
+        name: opts.name
       }
     },
+    clientPackage: {
+      filename: `${opts.path}/.auto/clients/package.json`,
+      engine: 'handlebars',
+      template: 'gatewayClientPackage',
+      mapping: {
+        packageName: opts.packageName
+      }
+    },
+    clientTsConfig: {
+      filename: `${opts.path}/.auto/clients/tsconfig.json`,
+      engine: 'handlebars',
+      template: 'gatewayClientTsConfig'
+    },
+    // swiftClient: {
+    //   filename: `${opts.path}/.auto/clients/${Case.pascal(opts.name)}GatewayClient.swift`,
+    //   engine: 'handlebars',
+    //   template: 'gatewaySwiftClient',
+    //   mapping: {
+    //     routes: '/interfaces'
+    //   }
+    // },
     routeInterface: {
       filename: {
         engine: 'handlebars',
@@ -70,7 +92,7 @@ export function generateHandler(opts: IGenerateOpts) {
       template: 'autoBarrel'
     },
     tsClient: {
-      filename: `${opts.path}/.auto/clients/${Case.pascal(opts.name)}ServiceClient.ts`,
+      filename: `${opts.path}/.auto/clients/src/${Case.pascal(opts.name)}ServiceClient.ts`,
       engine: 'handlebars',
       template: 'tsClient',
       mapping: {
@@ -78,14 +100,35 @@ export function generateHandler(opts: IGenerateOpts) {
         calls: '/interfaces'
       }
     },
-    swiftClient: {
-      filename: `${opts.path}/.auto/clients/${Case.pascal(opts.name)}ServiceClient.swift`,
+    clientIndex: {
+      filename: `${opts.path}/.auto/clients/src/index.ts`,
       engine: 'handlebars',
-      template: 'swiftClient',
+      template: 'serviceClientIndex',
       mapping: {
-        calls: '/interfaces'
+        name: opts.name
       }
     },
+    clientPackage: {
+      filename: `${opts.path}/.auto/clients/package.json`,
+      engine: 'handlebars',
+      template: 'serviceClientPackage',
+      mapping: {
+        packageName: opts.packageName
+      }
+    },
+    clientTsConfig: {
+      filename: `${opts.path}/.auto/clients/tsconfig.json`,
+      engine: 'handlebars',
+      template: 'serviceClientTsConfig'
+    },
+    // swiftClient: {
+    //   filename: `${opts.path}/.auto/clients/${Case.pascal(opts.name)}ServiceClient.swift`,
+    //   engine: 'handlebars',
+    //   template: 'swiftClient',
+    //   mapping: {
+    //     calls: '/interfaces'
+    //   }
+    // },
     callInterface: {
       filename: {
         engine: 'handlebars',
@@ -166,11 +209,20 @@ export function generateHandler(opts: IGenerateOpts) {
       interfacesBarrel: {
         template: fs.readFileSync(`${__dirname}/../../bin/templates/service/interfacesBarrel.hbs`, 'utf8')
       },
-      swiftClient: {
-        template: fs.readFileSync(`${__dirname}/../../bin/templates/service/swiftClient.hbs`, 'utf8')
-      },
+      // swiftClient: {
+      //   template: fs.readFileSync(`${__dirname}/../../bin/templates/service/swiftClient.hbs`, 'utf8')
+      // },
       tsClient: {
         template: fs.readFileSync(`${__dirname}/../../bin/templates/service/tsClient.hbs`, 'utf8')
+      },
+      serviceClientIndex: {
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/service/clientIndex.hbs`, 'utf8')
+      },
+      serviceClientPackage: {
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/service/clientPackage.hbs`, 'utf8')
+      },
+      serviceClientTsConfig: {
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/service/clientTsConfig.hbs`, 'utf8')
       },
       gatewayRouteInterface: {
         template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/routeInterface.hbs`, 'utf8')
@@ -184,11 +236,20 @@ export function generateHandler(opts: IGenerateOpts) {
       gatewayInterfacesBarrel: {
         template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/interfacesBarrel.hbs`, 'utf8')
       },
-      gatewaySwiftClient: {
-        template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/swiftClient.hbs`, 'utf8')
-      },
+      // gatewaySwiftClient: {
+      //   template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/swiftClient.hbs`, 'utf8')
+      // },
       gatewayTsClient: {
         template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/tsClient.hbs`, 'utf8')
+      },
+      gatewayClientIndex: {
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/clientIndex.hbs`, 'utf8')
+      },
+      gatewayClientPackage: {
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/clientPackage.hbs`, 'utf8')
+      },
+      gatewayClientTsConfig: {
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/clientTsConfig.hbs`, 'utf8')
       }
     }
   });
@@ -249,6 +310,7 @@ if (isGateway) {
   const gatewayName = Case.pascal(pkg.name.split('gateway-')[1]);
 
   generateHandler({
+    packageName: pkg.name,
     name: gatewayName,
     type: 'gateway',
     path: `./src`,
@@ -277,6 +339,7 @@ if (isService) {
   const serviceName = Case.pascal(pkg.name.split('service-')[1]);
 
   generateHandler({
+    packageName: pkg.name,
     name: serviceName,
     type: 'service',
     path: `./src`,
@@ -287,6 +350,8 @@ if (isService) {
 }
 
 if (!isGateway && !isService) {
+  const pkg = require(path.normalize(`${process.cwd()}/package.json`));
+  
   const gateways = fs.readdirSync('./src/gateways')
     .filter(gateway => fs.lstatSync(`./src/gateways/${gateway}`).isDirectory());
   gateways.forEach((gateway) => {
@@ -328,6 +393,7 @@ if (!isGateway && !isService) {
     });
 
     generateHandler({
+      packageName: pkg.name,
       name: gateway,
       type: 'gateway',
       path: `./src/gateways/${gateway}`,
@@ -355,6 +421,7 @@ if (!isGateway && !isService) {
     });
 
     generateHandler({
+      packageName: pkg.name,
       name: service,
       type: 'service',
       path: `./src/services/${service}`,
