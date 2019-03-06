@@ -4,6 +4,102 @@
 
 ![microservices](https://files.readme.io/8205763-microservices.png)
 
+## Sample Application
+
+### Task Service
+
+This RPC service reads/writes tasks for a to-do list:
+
+> Tip: this service is accessible via http://localhost:4000
+
+```ts
+class TaskService extends Service {
+  calls = {
+    createTask: CreateTaskCall,
+    listTasks: ListTasksCall
+  };
+}
+
+class CreateTaskCall extends ServiceCall {
+  handler: ICreateTaskHandler = async request => {
+    const task = {
+      ...request,
+      id: nextTaskId
+    };
+    tasks.push(task);
+    nextTaskId++;
+    return {
+      id: task.id
+    };
+  };
+}
+
+class ListTasksCall extends ServiceCall {
+  handler: IListTasksHandler = async () => {
+    return {
+      tasks: tasks.map((task: IListTasksResponseTask) => ({
+        id: task.id,
+        text: task.text
+      }))
+    };
+  };
+}
+
+const taskService = new TaskService({
+  url: 'http://localhost:4000'
+});
+taskService.start();
+```
+
+### Public Gateway
+
+This REST gateway exposes the Task Service functionality:
+
+> Tip: this service is accessible via http://localhost:3000
+
+```ts
+class PublicGateway extends Gateway {
+  routes = [TasksRoute];
+}
+
+class TasksRoute extends GatewayRoute {
+  uri = '/tasks';
+  methods = {
+    get: GetTasksMethod,
+    post: PostTasksMethod
+  };
+}
+
+class GetTasksMethod extends GatewayMethod {
+  handler: any = async () => {
+    const result = await taskServiceClient.listTasks();
+    return {
+      status: 200,
+      body: result.tasks
+    };
+  };
+}
+
+class PostTasksMethod extends GatewayMethod {
+  handler: any = async (req: Request) => {
+    const result = await taskServiceClient.createTask({
+      text: req.body.text
+    });
+    return {
+      status: 201,
+      body: {
+        id: result.id
+      }
+    };
+  };
+}
+
+const publicGateway = new PublicGateway({
+  url: 'http://localhost:3000'
+});
+publicGateway.start();
+```
+
 ## API Reference
 
 ### Gateway
