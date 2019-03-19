@@ -1,4 +1,5 @@
 import * as bodyParser from 'body-parser';
+import { CronJob } from 'cron';
 import * as express from 'express';
 import { Express } from 'express';
 import * as http from 'http';
@@ -6,11 +7,13 @@ import * as url from 'url';
 
 import { configs } from '../configs';
 import { loadServiceHandler } from '../utils';
+import { ServiceJob } from './ServiceJob';
 
 interface IServiceOpts {
   calls?: any;
   environment?: string;
   enableLogging?: boolean;
+  jobs?: { new(): ServiceJob }[];
   knownErrors?: { new(): Error }[];
   onLoad?: Function;
   onStart?: Function;
@@ -20,6 +23,7 @@ interface IServiceOpts {
 
 export class Service {
   calls: any = {};
+  jobs: { new(): ServiceJob }[] = [];
   express: Express;
   listener: http.Server;
 
@@ -41,6 +45,9 @@ export class Service {
     }
     if (opts && opts.enableLogging !== undefined) {
       this.enableLogging = opts.enableLogging;
+    }
+    if (opts && opts.jobs !== undefined) {
+      this.jobs = opts.jobs;
     }
     if (opts && opts.onLoad !== undefined) {
       this.onLoad = opts.onLoad;
@@ -126,6 +133,11 @@ export class Service {
             res.status(statusCode).send(response);
           }
         );
+      });
+
+      this.jobs.forEach((Job) => {
+        const job = new Job();
+        new CronJob(job.cron, job.handler, null, true, 'America/Chicago');
       });
 
       const serverUrl = url.parse(this.url);
