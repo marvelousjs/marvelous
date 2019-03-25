@@ -36,6 +36,7 @@ export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../
 }
 
 export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}Response {
+  statusCode: number;
   {{#if response.body}}
   body: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}ResponseBody;
   {{/if}}

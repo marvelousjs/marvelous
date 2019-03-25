@@ -25,6 +25,8 @@ export class Service {
   calls: any = {};
   jobs: { new(): ServiceJob }[] = [];
   express: Express;
+
+  jobListeners: CronJob[];
   listener: http.Server;
 
   onLoad: Function;
@@ -135,11 +137,6 @@ export class Service {
         );
       });
 
-      this.jobs.forEach((Job) => {
-        const job = new Job();
-        new CronJob(job.cron, job.handler, null, true, 'America/Chicago');
-      });
-
       const serverUrl = url.parse(this.url);
 
       this.listener = this.express.listen(
@@ -155,6 +152,11 @@ export class Service {
           }
         }
       );
+
+      this.jobListeners = this.jobs.map((Job) => {
+        const job = new Job();
+        return new CronJob(job.cron, job.handler, null, true, 'America/Chicago');
+      });
     });
   }
 
@@ -168,6 +170,10 @@ export class Service {
         if (this.onStop) {
           await this.onStop.apply(args);
         }
+      });
+
+      this.jobListeners.forEach((cronJob) => {
+        cronJob.stop();
       });
     });
   }
