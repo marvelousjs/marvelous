@@ -14,7 +14,7 @@ interface I{{{case gatewayName 'pascal'}}}GatewayClient {
   {{#each routes}}
   '{{{./uri}}}': {
     {{#each methods}}
-    {{{@key}}}: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}Function;
+    {{{@key}}}: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}Function;
     {{/each}}
   };
   {{/each}}
@@ -22,33 +22,33 @@ interface I{{{case gatewayName 'pascal'}}}GatewayClient {
 
 {{#each routes}}
 {{#each methods}}
-export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}Function {
-  (request?: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}Request): Promise<I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}Response>;
+export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}Function {
+  (request?: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}Request): Promise<I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}Response>;
 }
 
-export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}Request {
+export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}Request {
   {{#if request.body}}
-  body: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}RequestBody;
+  body: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}RequestBody;
   {{/if}}
   {{#if request.params}}
-  params: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}RequestParams;
+  params: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}RequestParams;
   {{/if}}
 }
 
-export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}Response {
+export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}Response {
   {{#if response.body}}
-  body: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}ResponseBody;
+  body: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}ResponseBody;
   {{/if}}
 }
 
 {{#if request.body}}
-{{{tsInterface (concat (case ../../gatewayName 'pascal') 'GatewayClient' (case @key 'pascal') 'RequestBody') request.body}}}
+{{{tsInterface (concat (case ../../gatewayName 'pascal') 'GatewayClient' (case @../key 'pascal') (case @key 'pascal') 'RequestBody') request.body}}}
 {{/if}}
 {{#if response.body}}
-{{{tsInterface (concat (case ../../gatewayName 'pascal') 'GatewayClient' (case @key 'pascal') 'ResponseBody') response.body}}}
+{{{tsInterface (concat (case ../../gatewayName 'pascal') 'GatewayClient' (case @../key 'pascal') (case @key 'pascal') 'ResponseBody') response.body}}}
 {{/if}}
 {{#if request.params}}
-{{{tsInterface (concat (case ../../gatewayName 'pascal') 'GatewayClient' (case @key 'pascal') 'RequestParams') request.params}}}
+{{{tsInterface (concat (case ../../gatewayName 'pascal') 'GatewayClient' (case @../key 'pascal') (case @key 'pascal') 'RequestParams') request.params}}}
 {{/if}}
 {{/each}}
 {{/each}}
@@ -118,7 +118,7 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
 
   '{{{./uri}}}': {
     {{#each methods}}
-    {{{@key}}}: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @key 'pascal'}}}Function;
+    {{{@key}}}: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}Function;
     {{/each}}
   } = {
     {{#each methods}}
