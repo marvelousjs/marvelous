@@ -28,10 +28,10 @@ export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../
 
 export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}Request {
   {{#if request.body}}
-  body: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}RequestBody;
+  body?: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}RequestBody;
   {{/if}}
   {{#if request.params}}
-  params: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}RequestParams;
+  params?: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}RequestParams;
   {{/if}}
 }
 
