@@ -58,6 +58,83 @@ export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../
 {{/each}}
 {{/each}}
 
+const handler = async (req: any = {}, urlString: string = '', method = 'get'): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    try {
+      const reqString = JSON.stringify(req.body || {});
+      const urlParts = url.parse(urlString);
+      
+      const pathname = urlParts.pathname.replace(/(:[a-z][^(\.\/)]+)/gi, (a, b) => {
+        return req.params[b.substr(1)] ? req.params[b.substr(1)] : b;
+      });
+
+      const headers: {
+        'Authorization'?: string;
+        'Content-Type': string;
+        'Content-Length': number;
+      } = {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(reqString)
+      };
+      if (localStorage.getItem('authorization')) {
+        headers['Authorization'] = localStorage.getItem('authorization');
+      }
+
+      const input = http.request(
+        {
+          protocol: urlParts.protocol,
+          host: urlParts.hostname,
+          port: urlParts.port,
+          path: pathname,
+          method,
+          headers
+        },
+        output => {
+          let responseString = '';
+
+          output.on('data', chunk => {
+            responseString += chunk;
+          });
+
+          output.on('end', () => {
+            const contentType = output.headers['content-type'];
+            const responseBody = contentType.includes('application/json')
+              ? JSON.parse(responseString)
+              : responseString;
+            if (output.statusCode >= 200 && output.statusCode <= 299) {
+              const authorization = output.headers['authorization'];
+              if (authorization) {
+                localStorage.setItem('authorization', authorization);
+              }
+              resolve({
+                statusCode: output.statusCode,
+                body: responseBody,
+                headers: {
+                  authorization,
+                  contentType
+                }
+              });
+            } else {
+              reject({
+                statusCode: output.statusCode,
+                body: responseBody,
+                headers: {
+                  contentType
+                }
+              });
+            }
+          });
+        }
+      );
+      input.on('error', reject);
+      input.write(reqString);
+      input.end();
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
 export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case gatewayName 'pascal'}}}GatewayClient {
   url = 'http://localhost:5000';
 
@@ -65,83 +142,6 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
     if (opts && opts.url !== undefined) {
       this.url = opts.url;
     }
-  }
-
-  private handler = async (req: any = {}, urlString: string = '', method = 'get'): Promise<any> => {
-    return new Promise((resolve, reject) => {
-      try {
-        const reqString = JSON.stringify(req.body || {});
-        const urlParts = url.parse(urlString);
-        
-        const pathname = urlParts.pathname.replace(/(:[a-z][^(\.\/)]+)/gi, (a, b) => {
-          return req.params[b.substr(1)] ? req.params[b.substr(1)] : b;
-        });
-
-        const headers: {
-          'Authorization'?: string;
-          'Content-Type': string;
-          'Content-Length': number;
-        } = {
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(reqString)
-        };
-        if (localStorage.getItem('authorization')) {
-          headers['Authorization'] = localStorage.getItem('authorization');
-        }
-
-        const input = http.request(
-          {
-            protocol: urlParts.protocol,
-            host: urlParts.hostname,
-            port: urlParts.port,
-            path: pathname,
-            method,
-            headers
-          },
-          output => {
-            let responseString = '';
-
-            output.on('data', chunk => {
-              responseString += chunk;
-            });
-
-            output.on('end', () => {
-              const contentType = output.headers['content-type'];
-              const responseBody = contentType.includes('application/json')
-                ? JSON.parse(responseString)
-                : responseString;
-              if (output.statusCode >= 200 && output.statusCode <= 299) {
-                const authorization = output.headers['authorization'];
-                if (authorization) {
-                  localStorage.setItem('authorization', authorization);
-                }
-                resolve({
-                  statusCode: output.statusCode,
-                  body: responseBody,
-                  headers: {
-                    authorization,
-                    contentType
-                  }
-                });
-              } else {
-                reject({
-                  statusCode: output.statusCode,
-                  body: responseBody,
-                  headers: {
-                    contentType
-                  }
-                });
-              }
-            });
-          }
-        );
-        input.on('error', reject);
-        input.write(reqString);
-        input.end();
-      } catch (error) {
-        reject(error);
-      }
-    });
   }
   {{#each routes}}
 
@@ -152,7 +152,7 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
   } = {
     {{#each methods}}
     {{{@key}}}: async (req) => {
-      return this.handler(req, `${this.url}{{{../uri}}}`, '{{{@key}}}');
+      return handler(req, `${this.url}{{{../uri}}}`, '{{{@key}}}');
     }{{#unless @last}},{{/unless}}
     {{/each}}
   };
