@@ -147,7 +147,7 @@ export class Gateway {
       this.express.use((req, res, next) => {
         res.status(404).send({
           name: 'NotFoundGatewayError',
-          message: 'Call not found'
+          message: 'Method not found.'
         });
       });
 

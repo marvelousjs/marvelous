@@ -140,7 +140,7 @@ export class Service {
       this.express.use((req, res, next) => {
         res.status(400).send({
           name: 'NotFoundServiceError',
-          message: 'Call not found'
+          message: 'Call not found.'
         });
       });
 
