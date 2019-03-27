@@ -2,7 +2,6 @@ import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import { Express } from 'express';
 import * as http from 'http';
-import * as session from 'express-session';
 import * as url from 'url';
 
 import { configs } from '../configs';
@@ -82,13 +81,13 @@ export class Gateway {
         res.setHeader('Access-Control-Allow-Credentials', 'true');
         res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
         res.setHeader('Access-Control-Allow-Methods', 'GET,PATCH,PUT,DELETE,POST,OPTIONS,HEAD');
-        next();
+        res.setHeader('Content-Type', GatewayContentType.Json);
+        if ('OPTIONS' === req.method) {
+          res.status(200).send();
+        } else {
+          next();
+        }
       });
-      this.express.use(session({
-        secret: '6ff70bff-aed3-42c1-acf5-74a63ea5e008',
-        resave: false,
-        saveUninitialized: true
-      }));
 
       this.express.get('/', (req, res) => {
         res.status(200).send({});
@@ -110,8 +109,6 @@ export class Gateway {
                 statusCode = response.statusCode || 200;
                 if (response.contentType) {
                   res.setHeader('Content-Type', response.contentType);
-                } else {
-                  res.setHeader('Content-Type', GatewayContentType.Json);
                 }
 
               } catch (error) {

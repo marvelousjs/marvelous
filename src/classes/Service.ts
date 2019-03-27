@@ -91,7 +91,11 @@ export class Service {
         res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
         res.setHeader('Access-Control-Allow-Methods', 'GET,PATCH,PUT,DELETE,POST,OPTIONS,HEAD');
         res.setHeader('Content-Type', 'application/json');
-        next();
+        if ('OPTIONS' === req.method) {
+          res.status(200).send();
+        } else {
+          next();
+        }
       });
 
       this.express.get('/', (req, res) => {

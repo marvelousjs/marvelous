@@ -17,7 +17,9 @@ export interface I{{{case name 'pascal'}}}Request {
   {{#if request.params}}
   params: I{{{case name 'pascal'}}}RequestParams;
   {{/if}}
-  session: any;
+  headers: {
+    authorization?: string;
+  }
 }
 
 export interface I{{{case name 'pascal'}}}Response {
