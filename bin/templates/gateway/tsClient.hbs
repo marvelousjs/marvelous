@@ -77,7 +77,7 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
           return req.params[b.substr(1)] ? req.params[b.substr(1)] : b;
         });
 
-        const headers: {
+        const requestHeaders: {
           'Authorization'?: string;
           'Content-Type': string;
           'Content-Length': number;
@@ -86,9 +86,9 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
           'Content-Length': Buffer.byteLength(reqString)
         };
         if (typeof localStorage === 'undefined' && this.tempAuth) {
-          headers['Authorization'] = this.tempAuth;
+          requestHeaders['Authorization'] = this.tempAuth;
         } else if (typeof localStorage !== 'undefined' && localStorage.getItem('authorization')) {
-          headers['Authorization'] = localStorage.getItem('authorization');
+          requestHeaders['Authorization'] = localStorage.getItem('authorization');
         }
 
         const input = http.request(
@@ -98,7 +98,7 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
             port: urlParts.port,
             path: pathname,
             method,
-            headers
+            headers: requestHeaders
           },
           output => {
             let responseString = '';
@@ -113,21 +113,27 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
                 ? JSON.parse(responseString)
                 : responseString;
               if (output.statusCode >= 200 && output.statusCode <= 299) {
+                const responseHeaders: {
+                  authorization?: string;
+                  contentType?: string;
+                } = {
+                  contentType
+                };
+
                 const authorization = output.headers['authorization'];
                 if (authorization) {
+                  responseHeaders.authorization = authorization;
                   if (typeof localStorage === 'undefined') {
                     this.tempAuth = authorization;
                   } else {
                     localStorage.setItem('authorization', authorization);
                   }
                 }
+
                 resolve({
                   statusCode: output.statusCode,
                   body: responseBody,
-                  headers: {
-                    authorization,
-                    contentType
-                  }
+                  headers: responseHeaders
                 });
               } else {
                 reject({
