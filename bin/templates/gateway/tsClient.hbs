@@ -36,11 +36,13 @@ export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../
 }
 
 export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}Response {
-  contentType: string;
   statusCode: number;
   {{#if response.body}}
   body: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}ResponseBody;
   {{/if}}
+  headers: {
+    contentType?: string;
+  }
 }
 
 {{#if request.body}}
@@ -75,12 +77,16 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
         });
 
         const headers: {
+          'Authorization'?: string;
           'Content-Type': string;
           'Content-Length': number;
         } = {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(reqString)
         };
+        if (localStorage.getItem('token')) {
+          headers['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
+        }
 
         const input = http.request(
           {
@@ -104,16 +110,23 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
                 ? JSON.parse(responseString)
                 : responseString;
               if (output.statusCode >= 200 && output.statusCode <= 299) {
+                if (responseBody.user && responseBody.user.token) {
+                  localStorage.setItem('token', responseBody.user.token);
+                }
                 resolve({
-                  contentType,
                   statusCode: output.statusCode,
-                  body: responseBody
+                  body: responseBody,
+                  headers: {
+                    contentType
+                  }
                 });
               } else {
                 reject({
-                  contentType,
                   statusCode: output.statusCode,
-                  body: responseBody
+                  body: responseBody,
+                  headers: {
+                    contentType
+                  }
                 });
               }
             });

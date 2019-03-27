@@ -17,17 +17,20 @@ export interface I{{{case name 'pascal'}}}Request {
   {{#if request.params}}
   params: I{{{case name 'pascal'}}}RequestParams;
   {{/if}}
-  headers: {
+  headers?: {
     authorization?: string;
+    contentType?: GatewayContentType;
   }
 }
 
 export interface I{{{case name 'pascal'}}}Response {
-  contentType?: GatewayContentType;
   statusCode: number;
   {{#if response.body}}
   body: I{{{case name 'pascal'}}}ResponseBody;
   {{/if}}
+  headers?: {
+    contentType?: GatewayContentType;
+  }
 }
 
 {{#if request.body}}

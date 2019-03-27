@@ -107,8 +107,10 @@ export class Gateway {
                 const handler = loadGatewayHandler(operation);
                 response = await handler(req);
                 statusCode = response.statusCode || 200;
-                if (response.contentType) {
-                  res.setHeader('Content-Type', response.contentType);
+                if (response.headers) {
+                  if (response.headers.contentType) {
+                    res.setHeader('Content-Type', response.headers.contentType);
+                  }
                 }
 
               } catch (error) {
