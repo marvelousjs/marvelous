@@ -53,67 +53,81 @@ export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../
 {{/if}}
 {{/each}}
 {{/each}}
-async function handler(req: any = {}, urlString: string = '', method = 'get'): Promise<any> {
-  return new Promise((resolve, reject) => {
-    try {
-      const reqString = JSON.stringify(req.body || {});
-      const urlParts = url.parse(urlString);
-      
-      const pathname = urlParts.pathname.replace(/(:[a-z][^\/]+)/gi, (a, b) => {
-        return req.params[b.substr(1)] ? req.params[b.substr(1)] : b;
-      });
-
-      const input = http.request(
-        {
-          protocol: urlParts.protocol,
-          host: urlParts.hostname,
-          port: urlParts.port,
-          path: pathname,
-          method,
-          headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(reqString)
-          }
-        },
-        output => {
-          let responseString = '';
-
-          output.on('data', chunk => {
-            responseString += chunk;
-          });
-
-          output.on('end', () => {
-            const responseBody = JSON.parse(responseString) || {};
-            if (output.statusCode >= 200 || output.statusCode <= 299) {
-              resolve({
-                statusCode: output.statusCode,
-                body: responseBody
-              });
-            } else {
-              reject({
-                statusCode: output.statusCode,
-                body: responseBody
-              });
-            }
-          });
-        }
-      );
-      input.on('error', reject);
-      input.write(reqString);
-      input.end();
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
 
 export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case gatewayName 'pascal'}}}GatewayClient {
+  cookie = '';
   url = 'http://localhost:5000';
 
   constructor(opts?: I{{{case gatewayName 'pascal'}}}GatewayClientOpts) {
     if (opts && opts.url !== undefined) {
       this.url = opts.url;
     }
+  }
+
+  private handler = async (req: any = {}, urlString: string = '', method = 'get'): Promise<any> => {
+    return new Promise((resolve, reject) => {
+      try {
+        const reqString = JSON.stringify(req.body || {});
+        const urlParts = url.parse(urlString);
+        
+        const pathname = urlParts.pathname.replace(/(:[a-z][^\/]+)/gi, (a, b) => {
+          return req.params[b.substr(1)] ? req.params[b.substr(1)] : b;
+        });
+
+        const headers: {
+          'Content-Type': string;
+          'Content-Length': number;
+          'Cookie'?: string;
+        } = {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(reqString)
+        };
+        if (this.cookie) {
+          headers['Cookie'] = this.cookie;
+        }
+
+        const input = http.request(
+          {
+            protocol: urlParts.protocol,
+            host: urlParts.hostname,
+            port: urlParts.port,
+            path: pathname,
+            method,
+            headers
+          },
+          output => {
+            let responseString = '';
+
+            output.on('data', chunk => {
+              responseString += chunk;
+            });
+
+            output.on('end', () => {
+              const responseBody = JSON.parse(responseString) || {};
+              if (output.statusCode >= 200 && output.statusCode <= 299) {
+                if (output.headers['set-cookie']) {
+                  this.cookie = output.headers['set-cookie'].join(';');
+                }
+                resolve({
+                  statusCode: output.statusCode,
+                  body: responseBody
+                });
+              } else {
+                reject({
+                  statusCode: output.statusCode,
+                  body: responseBody
+                });
+              }
+            });
+          }
+        );
+        input.on('error', reject);
+        input.write(reqString);
+        input.end();
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
   {{#each routes}}
 
@@ -124,7 +138,7 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
   } = {
     {{#each methods}}
     {{{@key}}}: async (req) => {
-      return handler(req, `${this.url}{{{../uri}}}`, '{{{@key}}}');
+      return this.handler(req, `${this.url}{{{../uri}}}`, '{{{@key}}}');
     }{{#unless @last}},{{/unless}}
     {{/each}}
   };
