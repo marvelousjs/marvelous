@@ -1,8 +1,8 @@
 import { ServiceError } from '../classes/ServiceError';
 
-export class ValidationServiceError extends ServiceError {
-  name = 'ValidationServiceError';
-  message = 'Validation failed.';
+export class UnknownServiceError extends ServiceError {
+  name = 'UnknownServiceError';
+  message = 'Unknown error.';
   constructor(message?: string) {
     super(message);
     if (message) {

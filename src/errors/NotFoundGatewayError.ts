@@ -1,9 +1,9 @@
 import { GatewayError } from '../classes/GatewayError';
 
-export class ValidationGatewayError extends GatewayError {
-  name = 'ValidationGatewayError';
-  message = 'Validation failed.';
-  statusCode = 400;
+export class NotFoundGatewayError extends GatewayError {
+  name = 'NotFoundGatewayError';
+  message = 'Not found.';
+  statusCode = 404;
   constructor(message?: string) {
     super(message);
     if (message) {

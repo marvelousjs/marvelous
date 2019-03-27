@@ -123,7 +123,7 @@ export class Service {
               // unknown error
               } else {
                 response = {
-                  name: 'UnknownError',
+                  name: 'UnknownServiceError',
                   message: 'Server encountered an unexpected error'
                 };
                 statusCode = 500;
@@ -135,6 +135,13 @@ export class Service {
             res.status(statusCode).send(response);
           }
         );
+      });
+
+      this.express.use((req, res, next) => {
+        res.status(400).send({
+          name: 'NotFoundServiceError',
+          message: 'Call not found'
+        });
       });
 
       const serverUrl = url.parse(this.url);

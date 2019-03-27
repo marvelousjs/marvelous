@@ -36,6 +36,7 @@ export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../
 }
 
 export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}Response {
+  contentType: string;
   statusCode: number;
   {{#if response.body}}
   body: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}ResponseBody;
@@ -70,7 +71,7 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
         const reqString = JSON.stringify(req.body || {});
         const urlParts = url.parse(urlString);
         
-        const pathname = urlParts.pathname.replace(/(:[a-z][^\/]+)/gi, (a, b) => {
+        const pathname = urlParts.pathname.replace(/(:[a-z][^(\.\/)]+)/gi, (a, b) => {
           return req.params[b.substr(1)] ? req.params[b.substr(1)] : b;
         });
 
@@ -103,17 +104,22 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
             });
 
             output.on('end', () => {
-              const responseBody = JSON.parse(responseString) || {};
+              const contentType = output.headers['content-type'];
+              const responseBody = contentType === 'application/json'
+                ? JSON.parse(responseString)
+                : responseString;
               if (output.statusCode >= 200 && output.statusCode <= 299) {
                 if (output.headers['set-cookie']) {
                   this.cookie = output.headers['set-cookie'].join(';');
                 }
                 resolve({
+                  contentType,
                   statusCode: output.statusCode,
                   body: responseBody
                 });
               } else {
                 reject({
+                  contentType,
                   statusCode: output.statusCode,
                   body: responseBody
                 });

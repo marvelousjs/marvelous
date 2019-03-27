@@ -1,4 +1,5 @@
 export * from './Gateway';
+export * from './GatewayContentType';
 export * from './GatewayError';
 export * from './GatewayMethod';
 export * from './GatewayRoute';

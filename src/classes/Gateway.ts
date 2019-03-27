@@ -9,6 +9,7 @@ import { configs } from '../configs';
 import { loadGatewayHandler } from '../utils';
 
 import { GatewayRoute } from './GatewayRoute';
+import { GatewayContentType } from './GatewayContentType';
 
 interface IGatewayOpts {
   environment?: string;
@@ -81,7 +82,6 @@ export class Gateway {
         res.setHeader('Access-Control-Allow-Credentials', 'true');
         res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
         res.setHeader('Access-Control-Allow-Methods', 'GET,PATCH,PUT,DELETE,POST,OPTIONS,HEAD');
-        res.setHeader('Content-Type', 'application/json');
         next();
       });
       this.express.use(session({
@@ -108,6 +108,11 @@ export class Gateway {
                 const handler = loadGatewayHandler(operation);
                 response = await handler(req);
                 statusCode = response.statusCode || 200;
+                if (response.contentType) {
+                  res.setHeader('Content-Type', response.contentType);
+                } else {
+                  res.setHeader('Content-Type', GatewayContentType.Json);
+                }
 
               } catch (error) {
                 // known error
@@ -136,6 +141,13 @@ export class Gateway {
               res.status(statusCode).send(response.body);
             }
           );
+        });
+      });
+
+      this.express.use((req, res, next) => {
+        res.status(404).send({
+          name: 'NotFoundGatewayError',
+          message: 'Call not found'
         });
       });
 
