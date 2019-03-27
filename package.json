@@ -17,11 +17,15 @@
     "express": "^4.16.4",
     "fs-extra": "^7.0.1",
     "jazzdb": "^0.7.0",
-    "recursive-readdir": "^2.2.2"
+    "jsonwebtoken": "^8.5.1",
+    "recursive-readdir": "^2.2.2",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^8.3.2",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.18",
+    "@types/uuid": "^3.4.4",
     "axios": "^0.18.0",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.9",

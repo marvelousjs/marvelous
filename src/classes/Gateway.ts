@@ -1,8 +1,10 @@
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
-import { Express } from 'express';
+import { Express, Request, Response } from 'express';
 import * as http from 'http';
+import * as jwt from 'jsonwebtoken';
 import * as url from 'url';
+import { v4 as uuid } from 'uuid';
 
 import { configs } from '../configs';
 import { loadGatewayHandler } from '../utils';
@@ -18,19 +20,29 @@ interface IGatewayOpts {
   onStart?: Function;
   onStop?: Function;
   routes?: { new(): GatewayRoute }[];
+  tokenSecret?: string;
   url?: string;
 }
 
+interface IRequest extends Request {
+  token: string;
+  user: any;
+}
+
 export class Gateway {
+  environment = process.env.NODE_ENV;
   express: Express;
   listener: http.Server;
   routes: { new(): GatewayRoute }[] = [];
+  tokenSecret = this.environment === 'test' || this.environment === 'development'
+    ? 'faec406e-e5e3-49de-b497-fd531cb05045'
+    : uuid();
+  user: any = {};
 
   onLoad: Function;
   onStart: Function;
   onStop: Function;
 
-  environment = process.env.NODE_ENV;
   enableLogging = false;
   knownErrors: { new(): Error }[] = [];
   url = configs.url || 'http://localhost:5000';
@@ -54,6 +66,9 @@ export class Gateway {
     if (opts && opts.knownErrors !== undefined) {
       this.knownErrors = opts.knownErrors;
     }
+    if (opts && opts.tokenSecret !== undefined) {
+      this.tokenSecret = opts.tokenSecret;
+    }
     if (opts && opts.url !== undefined) {
       this.url = opts.url;
     }
@@ -73,7 +88,7 @@ export class Gateway {
       this.express = express();
 
       this.express.use(bodyParser.json({ limit: '50mb' }));
-      this.express.use((req, res, next) => {
+      this.express.use((req: IRequest, res, next) => {
         const origin = req.get('origin');
         if (origin) {
           res.setHeader('Access-Control-Allow-Origin', origin);
@@ -81,7 +96,36 @@ export class Gateway {
         res.setHeader('Access-Control-Allow-Credentials', 'true');
         res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
         res.setHeader('Access-Control-Allow-Methods', 'GET,PATCH,PUT,DELETE,POST,OPTIONS,HEAD');
+        res.setHeader('Access-Control-Expose-Headers', 'Authorization');
         res.setHeader('Content-Type', GatewayContentType.Json);
+
+        Object.defineProperty(req, 'user', {
+          get: () => {
+            return this.user;
+          },
+          set: (payload) => {
+            if (payload.isLoggedIn) {
+              req.token = jwt.sign(payload, this.tokenSecret);
+            } else {
+              req.token = '';
+            }
+            this.user = payload;
+          }
+        });
+
+        if (req.headers && req.headers.authorization) {
+          try {
+            req.user = jwt.verify(req.headers.authorization.split(' ')[1], this.tokenSecret);
+          } catch (error) {
+            res.status(401).send({});
+            return;
+          }
+        } else {
+          req.user = {
+            id: '',
+            isLoggedIn: false
+          };
+        }
         if ('OPTIONS' === req.method) {
           res.status(200).send();
         } else {
@@ -99,7 +143,7 @@ export class Gateway {
           const operation = (route.methods as any)[method];
           (this.express as any)[method](
             route.uri,
-            async (req: express.Request, res: express.Response) => {
+            async (req: IRequest, res: Response) => {
               let response: any;
               let statusCode: number;
               
@@ -111,6 +155,9 @@ export class Gateway {
                   if (response.headers.contentType) {
                     res.setHeader('Content-Type', response.headers.contentType);
                   }
+                }
+                if (req.token) {
+                  res.setHeader('Authorization', `Bearer ${req.token}`);
                 }
 
               } catch (error) {
