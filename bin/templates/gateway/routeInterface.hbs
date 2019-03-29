@@ -17,6 +17,9 @@ export interface I{{{case name 'pascal'}}}Request {
   {{#if request.params}}
   params: I{{{case name 'pascal'}}}RequestParams;
   {{/if}}
+  {{#if request.query}}
+  query: I{{{case name 'pascal'}}}RequestQuery;
+  {{/if}}
   headers?: {
     authorization?: string;
     contentType?: GatewayContentType;
@@ -34,14 +37,20 @@ export interface I{{{case name 'pascal'}}}Response {
     contentType?: GatewayContentType;
   }
 }
-
 {{#if request.body}}
+
 {{{tsInterface (concat name 'RequestBody') request.body}}}
 {{/if}}
 {{#if request.params}}
+
 {{{tsInterface (concat name 'RequestParams') request.params}}}
 {{/if}}
+{{#if request.query}}
+
+{{{tsInterface (concat name 'RequestQuery') request.query}}}
+{{/if}}
 {{#if response.body}}
+
 {{{tsInterface (concat name 'ResponseBody') response.body}}}
 {{/if}}
 {{/each}}

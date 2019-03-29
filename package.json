@@ -38,6 +38,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "NODE_ENV=test mocha -r ts-node/register src/**/*.spec.ts"
+    "test": "NODE_ENV=test mocha -r ts-node/register src/**/*.spec.ts",
+    "watch": "tsc -w"
   }
 }

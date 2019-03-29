@@ -33,6 +33,9 @@ export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../
   {{#if request.params}}
   params?: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}RequestParams;
   {{/if}}
+  {{#if request.query}}
+  query?: I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}RequestQuery;
+  {{/if}}
 }
 
 export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../key 'pascal'}}}{{{case @key 'pascal'}}}Response {
@@ -45,15 +48,21 @@ export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../
     contentType?: string;
   }
 }
-
 {{#if request.body}}
+
 {{{tsInterface (concat (case ../../gatewayName 'pascal') 'GatewayClient' (case @../key 'pascal') (case @key 'pascal') 'RequestBody') request.body}}}
 {{/if}}
 {{#if response.body}}
+
 {{{tsInterface (concat (case ../../gatewayName 'pascal') 'GatewayClient' (case @../key 'pascal') (case @key 'pascal') 'ResponseBody') response.body}}}
 {{/if}}
 {{#if request.params}}
+
 {{{tsInterface (concat (case ../../gatewayName 'pascal') 'GatewayClient' (case @../key 'pascal') (case @key 'pascal') 'RequestParams') request.params}}}
+{{/if}}
+{{#if request.query}}
+
+{{{tsInterface (concat (case ../../gatewayName 'pascal') 'GatewayClient' (case @../key 'pascal') (case @key 'pascal') 'RequestQuery') request.query}}}
 {{/if}}
 {{/each}}
 {{/each}}
