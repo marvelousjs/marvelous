@@ -5,6 +5,7 @@ import zapp from '@zappjs/core';
 
 interface IGenerateOpts {
   packageName: string;
+  packageVersion: string;
   name: string,
   path: string;
   specs: any;
@@ -35,7 +36,8 @@ function generateHandler(opts: IGenerateOpts) {
       engine: 'handlebars',
       template: 'gatewayClientPackage',
       mapping: {
-        packageName: opts.packageName
+        packageName: opts.packageName,
+        packageVersion: opts.packageVersion
       }
     },
     clientTsConfig: {
@@ -168,6 +170,7 @@ export function generateClient() {
 
     generateHandler({
       packageName: pkg.name,
+      packageVersion: pkg.version,
       name: gatewayName,
       type: 'gateway',
       path: `./src`,
@@ -197,6 +200,7 @@ export function generateClient() {
 
     generateHandler({
       packageName: pkg.name,
+      packageVersion: pkg.version,
       name: serviceName,
       type: 'service',
       path: `./src`,
@@ -251,6 +255,7 @@ export function generateClient() {
 
       generateHandler({
         packageName: pkg.name,
+        packageVersion: pkg.version,
         name: gateway,
         type: 'gateway',
         path: `./src/gateways/${gateway}`,
@@ -279,6 +284,7 @@ export function generateClient() {
 
       generateHandler({
         packageName: pkg.name,
+        packageVersion: pkg.version,
         name: service,
         type: 'service',
         path: `./src/services/${service}`,
