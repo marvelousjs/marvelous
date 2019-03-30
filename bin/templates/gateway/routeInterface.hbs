@@ -47,7 +47,7 @@ export interface I{{{case name 'pascal'}}}Response {
 {{/if}}
 {{#if request.query}}
 
-{{{tsInterface (concat name 'RequestQuery') request.query}}}
+{{{tsInterface (concat name 'RequestQuery') request.query '  ' 'string'}}}
 {{/if}}
 {{#if response.body}}
 
