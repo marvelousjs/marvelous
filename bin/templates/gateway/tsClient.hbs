@@ -4,6 +4,7 @@
  */
 
 import * as http from 'http';
+import * as querystring from 'querystring';
 import * as url from 'url';
 
 interface I{{{case gatewayName 'pascal'}}}GatewayClientOpts {
@@ -79,8 +80,13 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
   private handler = async (req: any = {}, urlString: string = '', method = 'get'): Promise<any> => {
     return new Promise((resolve, reject) => {
       try {
+        let urlStringWithQuery = urlString;
+        if (req.query) {
+          urlStringWithQuery += `?${querystring.stringify(req.query)}`;
+        }
+
         const reqString = JSON.stringify(req.body || {});
-        const urlParts = url.parse(urlString);
+        const urlParts = url.parse(urlStringWithQuery);
         
         const pathname = urlParts.pathname.replace(/(:[a-z][^(\.\/)]+)/gi, (a, b) => {
           return req.params[b.substr(1)] ? req.params[b.substr(1)] : b;
@@ -105,7 +111,7 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
             protocol: urlParts.protocol,
             host: urlParts.hostname,
             port: urlParts.port,
-            path: pathname,
+            path: pathname + (urlParts.search || ''),
             method,
             headers: requestHeaders
           },
