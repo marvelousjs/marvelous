@@ -18,6 +18,15 @@ function generateHandler(opts: IGenerateOpts) {
       engine: 'handlebars',
       template: 'gatewayAutoBarrel'
     },
+    gatewayInterface: {
+      filename: `${opts.path}/.auto/types/gateway.types.ts`,
+      engine: 'handlebars',
+      template: 'gatewayInterface',
+      mapping: {
+        gatewayName: opts.specs.gatewayName,
+        gatewaySchema: '/gatewaySchema'
+      }
+    },
     routeInterface: {
       filename: {
         engine: 'handlebars',
@@ -32,6 +41,7 @@ function generateHandler(opts: IGenerateOpts) {
       mapping: {
         route: '@value',
         name: '@key',
+        gatewayName: opts.specs.gatewayName,
         gatewaySchema: '/gatewaySchema'
       }
     },
@@ -134,6 +144,9 @@ function generateHandler(opts: IGenerateOpts) {
       interfacesBarrel: {
         template: fs.readFileSync(`${__dirname}/../../bin/templates/service/interfacesBarrel.hbs`, 'utf8')
       },
+      gatewayInterface: {
+        template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/gatewayInterface.hbs`, 'utf8')
+      },
       gatewayRouteInterface: {
         template: fs.readFileSync(`${__dirname}/../../bin/templates/gateway/routeInterface.hbs`, 'utf8')
       },
@@ -211,6 +224,7 @@ export function generateTypes() {
       type: 'gateway',
       path: `./src`,
       specs: {
+        gatewayName,
         gatewaySchema,
         interfaces
       }
