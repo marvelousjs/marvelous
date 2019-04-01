@@ -129,7 +129,7 @@ export function generateClient() {
   const isService = fs.existsSync('./src/calls');
 
   if (isGateway) {
-    const gatewaySchema = fs.readdirSync(`./src`)
+    const gatewaySchema: any = fs.readdirSync(`./src`)
       .filter(schema => /\.schema\.ts$/i.test(schema))
       .reduce((_0, currentValue) => {
         let newValue = {};
@@ -139,6 +139,9 @@ export function generateClient() {
         });
         return newValue;
       }, {});
+    if (!gatewaySchema.user) {
+      gatewaySchema.user = {};
+    }
 
     const interfaces: any = {};
     const gatewayRoutes = fs.readdirSync(`./src/routes`)
