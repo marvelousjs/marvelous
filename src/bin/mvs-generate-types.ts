@@ -31,7 +31,8 @@ function generateHandler(opts: IGenerateOpts) {
       template: 'gatewayRouteInterface',
       mapping: {
         route: '@value',
-        name: '@key'
+        name: '@key',
+        gatewaySchema: '/gatewaySchema'
       }
     },
     routesBarrel: {
@@ -164,6 +165,17 @@ export function generateTypes() {
   const isService = fs.existsSync('./src/calls');
 
   if (isGateway) {
+    const gatewaySchema = fs.readdirSync(`./src`)
+      .filter(schema => /\.schema\.ts$/i.test(schema))
+      .reduce((_0, currentValue) => {
+        let newValue = {};
+        const interfaceObject = require(path.normalize(`${process.cwd()}/src/${currentValue}`));
+        Object.keys(interfaceObject).forEach((interfaceObjectKey) => {
+          newValue = interfaceObject[interfaceObjectKey];
+        });
+        return newValue;
+      }, {});
+
     const interfaces: any = {};
     const gatewayRoutes = fs.readdirSync(`./src/routes`)
       .filter(gatewayRoute => !/\.ts$/i.test(gatewayRoute));
@@ -199,6 +211,7 @@ export function generateTypes() {
       type: 'gateway',
       path: `./src`,
       specs: {
+        gatewaySchema,
         interfaces
       }
     });

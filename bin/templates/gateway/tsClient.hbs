@@ -4,11 +4,13 @@
  */
 
 import * as http from 'http';
+import * as jwt from 'jsonwebtoken';
 import * as querystring from 'querystring';
 import * as url from 'url';
 
 interface I{{{case gatewayName 'pascal'}}}GatewayClientOpts {
-  url: string;
+  authorization?: string;
+  url?: string;
 }
 
 interface I{{{case gatewayName 'pascal'}}}GatewayClient {
@@ -20,6 +22,8 @@ interface I{{{case gatewayName 'pascal'}}}GatewayClient {
   };
   {{/each}}
 }
+
+{{{tsInterface (concat (case gatewayName 'pascal') 'GatewayClientUser') gatewaySchema.user}}}
 
 {{#each routes}}
 {{#each methods}}
@@ -68,13 +72,29 @@ export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../
 {{/each}}
 {{/each}}
 export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case gatewayName 'pascal'}}}GatewayClient {
-  tempAuth = '';
+  private _authorization = '';
+  token = '';
   url = 'http://localhost:5000';
+  user: I{{{case gatewayName 'pascal'}}}GatewayClientUser = {} as I{{{case gatewayName 'pascal'}}}GatewayClientUser;
 
   constructor(opts?: I{{{case gatewayName 'pascal'}}}GatewayClientOpts) {
+    if (opts && opts.authorization !== undefined) {
+      this.authorization = opts.authorization;
+    } else if (typeof localStorage !== 'undefined' && localStorage.getItem('authorization')) {
+      this.authorization = localStorage.getItem('authorization');
+    }
     if (opts && opts.url !== undefined) {
       this.url = opts.url;
     }
+  }
+
+  get authorization(): string {
+    return this._authorization;
+  }
+  set authorization(value: string) {
+    this._authorization = value;
+    this.token = value.replace(/^Bearer /i, '');
+    this.user = jwt.decode(this.token) as I{{{case gatewayName 'pascal'}}}GatewayClientUser;
   }
 
   private handler = async (req: any = {}, urlString: string = '', method = 'get'): Promise<any> => {
@@ -100,10 +120,8 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(reqString)
         };
-        if (typeof localStorage === 'undefined' && this.tempAuth) {
-          requestHeaders['Authorization'] = this.tempAuth;
-        } else if (typeof localStorage !== 'undefined' && localStorage.getItem('authorization')) {
-          requestHeaders['Authorization'] = localStorage.getItem('authorization');
+        if (this.authorization) {
+          requestHeaders['Authorization'] = this.authorization;
         }
 
         const input = http.request(
@@ -138,9 +156,8 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
                 const authorization = output.headers['authorization'];
                 if (authorization) {
                   responseHeaders.authorization = authorization;
-                  if (typeof localStorage === 'undefined') {
-                    this.tempAuth = authorization;
-                  } else {
+                  this.authorization = authorization;
+                  if (typeof localStorage !== 'undefined') {
                     localStorage.setItem('authorization', authorization);
                   }
                 }

@@ -25,7 +25,7 @@ export interface I{{{case name 'pascal'}}}Request {
     contentType?: GatewayContentType;
   }
   token?: string;
-  user?: any;
+  user: I{{{case name 'pascal'}}}User;
 }
 
 export interface I{{{case name 'pascal'}}}Response {
@@ -37,6 +37,8 @@ export interface I{{{case name 'pascal'}}}Response {
     contentType?: GatewayContentType;
   }
 }
+
+{{{tsInterface (concat name 'User') ../gatewaySchema.user}}}
 {{#if request.body}}
 
 {{{tsInterface (concat name 'RequestBody') request.body}}}

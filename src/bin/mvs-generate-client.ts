@@ -20,6 +20,7 @@ function generateHandler(opts: IGenerateOpts) {
       template: 'gatewayTsClient',
       mapping: {
         gatewayName: opts.name,
+        gatewaySchema: '/gatewaySchema',
         routes: '/interfaces'
       }
     },
@@ -128,6 +129,17 @@ export function generateClient() {
   const isService = fs.existsSync('./src/calls');
 
   if (isGateway) {
+    const gatewaySchema = fs.readdirSync(`./src`)
+      .filter(schema => /\.schema\.ts$/i.test(schema))
+      .reduce((_0, currentValue) => {
+        let newValue = {};
+        const interfaceObject = require(path.normalize(`${process.cwd()}/src/${currentValue}`));
+        Object.keys(interfaceObject).forEach((interfaceObjectKey) => {
+          newValue = interfaceObject[interfaceObjectKey];
+        });
+        return newValue;
+      }, {});
+
     const interfaces: any = {};
     const gatewayRoutes = fs.readdirSync(`./src/routes`)
       .filter(gatewayRoute => !/\.ts$/i.test(gatewayRoute));
@@ -175,6 +187,7 @@ export function generateClient() {
       type: 'gateway',
       path: `./src`,
       specs: {
+        gatewaySchema,
         interfaces
       }
     });
