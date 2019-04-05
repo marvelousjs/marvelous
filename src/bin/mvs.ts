@@ -1,9 +1,7 @@
+import { exec } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as sane from 'sane';
-
-import { generateClient } from './mvs-generate-client';
-import { generateTypes } from './mvs-generate-types';
 
 const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf-8'));
 
@@ -17,13 +15,23 @@ if (process.argv[2] !== 'generate' || ['all', 'client', 'types'].indexOf(process
 const generate = () => {
   if (process.argv[3] === 'types' || process.argv[3] === 'all') {
     console.log('Generating types...');
-    generateTypes();
-    console.log('Done');
+    exec(`node ${__dirname}/mvs-generate-types`, (err) => {
+      if (err) {
+        console.log(err);
+        return;
+      }
+      console.log('Done');
+    });
   }
   if (process.argv[3] === 'client' || process.argv[3] === 'all') {
     console.log('Generating client...');
-    generateClient();
-    console.log('Done');
+    exec(`node ${__dirname}/mvs-generate-client`, (err) => {
+      if (err) {
+        console.log(err);
+        return;
+      }
+      console.log('Done');
+    });
   }
 };
 

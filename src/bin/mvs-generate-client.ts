@@ -1,3 +1,5 @@
+require('ts-node/register');
+
 import * as Case from 'case';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -311,3 +313,5 @@ export function generateClient() {
     });
   }
 }
+
+generateClient();
