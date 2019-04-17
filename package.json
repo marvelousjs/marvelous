@@ -10,7 +10,7 @@
     "@types/body-parser": "^1.17.0",
     "@types/cron": "^1.7.0",
     "@types/express": "^4.16.0",
-    "@zappjs/core": "^0.4.1",
+    "@zappjs/core": "^0.4.2",
     "body-parser": "^1.18.3",
     "case": "^1.6.1",
     "cron": "^1.7.0",
