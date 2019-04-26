@@ -4,6 +4,7 @@
  */
 
 import * as http from 'http';
+import * as https from 'https';
 import * as jwt from 'jsonwebtoken';
 import * as querystring from 'querystring';
 import * as url from 'url';
@@ -124,7 +125,9 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
           requestHeaders['Authorization'] = this.authorization;
         }
 
-        const input = http.request(
+        const client = urlParts.protocol === 'https:' ? https : http;
+
+        const input = client.request(
           {
             protocol: urlParts.protocol,
             host: urlParts.hostname,
