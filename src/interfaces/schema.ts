@@ -1,21 +1,26 @@
 export interface ISchema {
-  [key: string]: ISchemaProperty;
-}
-
-export interface ISchemaProperty {
   async?: boolean;
   pattern?: string;
   required?: boolean;
   return?: string;
   type?: string;
   properties?: {
-    [key: string]: ISchemaProperty;
+    [key: string]: ISchema;
   };
-  additionalProperties?: ISchemaProperty | boolean;
-  items?: ISchemaProperty | boolean;
-  anyOf?: ISchemaProperty[];
+  additionalProperties?: ISchema | boolean;
+  items?: ISchema | boolean;
+  anyOf?: ISchema[];
   maxLength?: number;
   minLength?: number;
   max?: number;
   min?: number;
+}
+
+export interface IGatewaySchema {
+  body?: ISchema;
+  headers?: ISchema;
+  params?: ISchema;
+}
+
+export interface IServiceSchema extends ISchema {
 }
