@@ -14,7 +14,6 @@ interface IServiceOpts {
   environment?: string;
   enableLogging?: boolean;
   jobs?: { new(): ServiceJob }[];
-  knownErrors?: { new(): Error }[];
   onLoad?: Function;
   onStart?: Function;
   onStop?: Function;
@@ -35,7 +34,6 @@ export class Service {
 
   environment = process.env.NODE_ENV;
   enableLogging = false;
-  knownErrors: { new(): Error }[] = [];
   url = configs.url || 'http://localhost:5000';
 
   constructor(opts?: IServiceOpts) {
@@ -59,9 +57,6 @@ export class Service {
     }
     if (opts && opts.onStop !== undefined) {
       this.onStop = opts.onStop;
-    }
-    if (opts && opts.knownErrors !== undefined) {
-      this.knownErrors = opts.knownErrors;
     }
     if (opts && opts.url !== undefined) {
       this.url = opts.url;
@@ -117,23 +112,11 @@ export class Service {
               statusCode = 200;
 
             } catch (error) {
-              // known error
-              if (this.knownErrors.find(knownError => error instanceof knownError)) {
-                response = {
-                  name: error.name,
-                  message: error.message
-                };
-                statusCode = 400;
-              // unknown error
-              } else {
-                response = {
-                  name: 'UnknownServiceError',
-                  message: 'Server encountered an unexpected error'
-                };
-                statusCode = 500;
-
-                console.log('INTERNAL SERVICE ERROR -', error);
-              }
+              response = {
+                name: error.name,
+                message: error.message
+              };
+              statusCode = 400;
             }
 
             res.status(statusCode).send(response);

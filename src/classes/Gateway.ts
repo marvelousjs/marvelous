@@ -103,12 +103,8 @@ export class Gateway {
           get: () => {
             return this.user;
           },
-          set: (payload) => {
-            if (payload.isLoggedIn) {
-              req.token = jwt.sign(payload, this.tokenSecret);
-            } else {
-              req.token = '';
-            }
+          set: (payload = {}) => {
+            req.token = jwt.sign(payload, this.tokenSecret);
             this.user = payload;
           }
         });

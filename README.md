@@ -356,7 +356,7 @@ publicGateway.start();
         <tr>
             <td>
                 <div><b>environment</b> string</div>
-                <em>the gateway environment</em>
+                <em>the service environment</em>
             </td>
             <td>
                 <code>"production"</code>
@@ -365,7 +365,7 @@ publicGateway.start();
         <tr>
             <td>
                 <div><b>enableLogging</b> string</div>
-                <em>enables gateway logging</em>
+                <em>enables service logging</em>
             </td>
             <td>
                 <code>true</code>
@@ -374,37 +374,28 @@ publicGateway.start();
         <tr>
             <td>
                 <div><b>onLoad</b> Function</div>
-                <em>fires when gateway is loaded</em>
+                <em>fires when service is loaded</em>
             </td>
             <td></td>
         </tr>
         <tr>
             <td>
                 <div><b>onStart</b> Function</div>
-                <em>fires when gateway is started</em>
+                <em>fires when service is started</em>
             </td>
             <td></td>
         </tr>
         <tr>
             <td>
                 <div><b>onStop</b> Function</div>
-                <em>fires when gateway is stopped</em>
+                <em>fires when service is stopped</em>
             </td>
             <td></td>
         </tr>
         <tr>
             <td>
-                <div><b>knownErrors</b> GatewayError[]</div>
-                <em>an array of gateway errors</em>
-            </td>
-            <td>
-                <code>[ AuthServiceError ]</code>
-            </td>
-        </tr>
-        <tr>
-            <td>
                 <div><b>url</b> string</div>
-                <em>the gateway url</em>
+                <em>the service url</em>
             </td>
             <td>
                 <code>"http://localhost:3000"</code>
