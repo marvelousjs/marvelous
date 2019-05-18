@@ -20,6 +20,7 @@ export interface IGatewaySchema {
   body?: ISchema;
   headers?: ISchema;
   params?: ISchema;
+  query?: ISchema;
 }
 
 export interface IServiceSchema extends ISchema {
