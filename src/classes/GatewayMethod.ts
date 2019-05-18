@@ -2,21 +2,16 @@ import { IGatewaySchema } from '../interfaces';
 
 export interface IGatewayMethod {
   handler: () => Promise<any>;
-  schema: IGatewayMethodSchema;
-}
-
-interface IGatewayMethodSchema {
-  request?: IGatewaySchema;
-  response?: IGatewaySchema;
+  schema: IGatewaySchema;
 }
 
 export interface IGatewayMethodArgs {
   handler?: () => Promise<any>;
-  schema?: IGatewayMethodSchema;
+  schema?: IGatewaySchema;
 }
 
 export class GatewayMethod implements IGatewayMethod {
-  schema: IGatewayMethodSchema = {};
+  schema: IGatewaySchema = {};
 
   async handler(): Promise<any> {}
 

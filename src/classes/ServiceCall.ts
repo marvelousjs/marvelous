@@ -1,20 +1,17 @@
-import { ISchema } from '../interfaces';
+import { IServiceSchema } from '../interfaces';
 
 export interface IServiceCall {
-  handler: Function;
-  schema: {
-    request: ISchema;
-    response: ISchema;
-  };
+  handler: () => Promise<any>;
+  schema: IServiceSchema;
 }
 
 export interface IServiceCallArgs {
-  handler?: any;
-  schema?: any;
+  handler?: () => Promise<any>;
+  schema?: IServiceSchema;
 }
 
 export class ServiceCall implements IServiceCall {
-  schema: any = {};
+  schema: IServiceSchema = {};
 
   async handler(): Promise<any> {}
 

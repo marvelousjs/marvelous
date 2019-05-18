@@ -17,10 +17,21 @@ export interface ISchema {
 }
 
 export interface IGatewaySchema {
-  body?: ISchema;
-  headers?: ISchema;
-  params?: ISchema;
-  query?: ISchema;
+  request?: {
+    body?: ISchema;
+    headers?: ISchema;
+    params?: ISchema;
+    query?: ISchema;
+  };
+  response?: {
+    body?: ISchema;
+    headers?: ISchema;
+  };
+}
+
+export interface IServiceSchema {
+  request?: ISchema;
+  response?: ISchema;
 }
 
 export interface IServiceSchema extends ISchema {
