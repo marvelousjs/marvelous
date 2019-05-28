@@ -88,6 +88,7 @@ export class Gateway {
       this.express = express();
 
       this.express.use(bodyParser.json({ limit: '50mb' }));
+      this.express.use(bodyParser.urlencoded({ extended: false }));
       this.express.use((req: IRequest, res, next) => {
         const origin = req.get('origin');
         if (origin) {
