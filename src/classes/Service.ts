@@ -149,6 +149,9 @@ export class Service {
 
       this.jobListeners = this.jobs.map((Job) => {
         const job = new Job();
+        if (job.shouldFireImmediately) {
+          job.handler();
+        }
         return new CronJob(job.cron, job.handler, null, true, 'America/Chicago');
       });
     });

@@ -1,15 +1,18 @@
 export interface IServiceJob {
   cron?: string;
   handler: Function;
+  shouldFireImmediately: boolean;
 }
 
 export interface IServiceJobArgs {
   cron?: string;
   handler?: any;
+  shouldFireImmediately?: boolean;
 }
 
 export class ServiceJob implements IServiceJob {
   cron: string;
+  shouldFireImmediately = false;
 
   async handler(): Promise<any> {}
 
