@@ -114,15 +114,12 @@ export class Gateway {
           try {
             req.user = jwt.verify(req.headers.authorization.split(' ')[1], this.tokenSecret);
           } catch (error) {
-            res.status(401).send({});
-            return;
+            req.user = {};
           }
         } else {
-          req.user = {
-            id: '',
-            isLoggedIn: false
-          };
+          req.user = {};
         }
+
         if ('OPTIONS' === req.method) {
           res.status(200).send();
         } else {

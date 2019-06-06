@@ -3,7 +3,8 @@ export interface ISchema {
   pattern?: string;
   required?: boolean;
   return?: string;
-  type?: string;
+  enum?: any[];
+  type: 'array' | 'boolean' | 'null' | 'number' | 'object' | 'string';
   properties?: {
     [key: string]: ISchema;
   };
@@ -17,16 +18,20 @@ export interface ISchema {
 }
 
 export interface IGatewaySchema {
-  request?: {
-    body?: ISchema;
-    headers?: ISchema;
-    params?: ISchema;
-    query?: ISchema;
-  };
-  response?: {
-    body?: ISchema;
-    headers?: ISchema;
-  };
+  request?: IGatewayRequestSchema;
+  response?: IGatewayResponseSchema;
+}
+
+export interface IGatewayRequestSchema {
+  body?: ISchema;
+  headers?: ISchema;
+  params?: ISchema;
+  query?: ISchema;
+}
+
+export interface IGatewayResponseSchema {
+  body?: ISchema;
+  headers?: ISchema;
 }
 
 export interface IServiceSchema {
@@ -34,5 +39,6 @@ export interface IServiceSchema {
   response?: ISchema;
 }
 
-export interface IServiceSchema extends ISchema {
-}
+export interface IServiceRequestSchema extends ISchema {}
+
+export interface IServiceResponseSchema extends ISchema {}
