@@ -147,12 +147,27 @@ export class Service {
         }
       );
 
-      this.jobListeners = this.jobs.map((Job) => {
+      // create jobs
+      const jobs = this.jobs.map(Job => {
         const job = new Job();
         if (job.shouldFireImmediately) {
           job.handler();
         }
-        return new CronJob(job.cron, job.handler, null, true, 'America/Chicago');
+        return job;
+      });
+      
+      // add job listeners if cron is defined
+      this.jobListeners = jobs
+        .filter(job => !job.cron)
+        .map((job) => {
+          return new CronJob(job.cron, job.handler, null, true, 'America/Chicago');
+        });
+
+      // fire some jobs immediately
+      jobs.forEach(job => {
+        if (job.shouldFireImmediately) {
+          job.handler();
+        }
       });
     });
   }
