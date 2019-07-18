@@ -72,30 +72,41 @@ export interface I{{{case ../../gatewayName 'pascal'}}}GatewayClient{{{case @../
 {{/if}}
 {{/each}}
 {{/each}}
+
+export interface I{{{case gatewayName 'pascal'}}}GatewayClientListener {
+  callback: Function;
+  type: 'error' | 'success';
+}
+
+export interface I{{{case gatewayName 'pascal'}}}GatewayClientListenerCallback {
+  (res: I{{{case gatewayName 'pascal'}}}GatewayClientListenerCallbackResponse): any;
+}
+
+export interface I{{{case gatewayName 'pascal'}}}GatewayClientListenerCallbackResponse {
+  statusCode: number;
+  body: any;
+  headers: {
+    [name: string]: string;
+  };
+}
+
 export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case gatewayName 'pascal'}}}GatewayClient {
-  private _authorization = '';
+  private _listeners: I{{{case gatewayName 'pascal'}}}GatewayClientListener[] = [];
+
+  authorization = '';
   token = '';
   url = 'http://localhost:5000';
   user: I{{{case gatewayName 'pascal'}}}GatewayClientUser = {} as I{{{case gatewayName 'pascal'}}}GatewayClientUser;
 
   constructor(opts?: I{{{case gatewayName 'pascal'}}}GatewayClientOpts) {
     if (opts && opts.authorization !== undefined) {
-      this.authorization = opts.authorization;
+      this.login(opts.authorization);
     } else if (typeof localStorage !== 'undefined' && localStorage.getItem('authorization')) {
-      this.authorization = localStorage.getItem('authorization');
+      this.login(localStorage.getItem('authorization'));
     }
     if (opts && opts.url !== undefined) {
       this.url = opts.url;
     }
-  }
-
-  get authorization(): string {
-    return this._authorization;
-  }
-  set authorization(value: string) {
-    this._authorization = value;
-    this.token = value.replace(/^Bearer /i, '');
-    this.user = jwt.decode(this.token) as I{{{case gatewayName 'pascal'}}}GatewayClientUser;
   }
 
   private handler = async (req: any = {}, urlString: string = '', method = 'get'): Promise<any> => {
@@ -159,25 +170,39 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
                 const authorization = output.headers['authorization'];
                 if (authorization) {
                   responseHeaders.authorization = authorization;
-                  this.authorization = authorization;
-                  if (typeof localStorage !== 'undefined') {
-                    localStorage.setItem('authorization', authorization);
-                  }
+                  this.login(authorization);
                 }
 
-                resolve({
+                const res = {
                   statusCode: output.statusCode,
                   body: responseBody,
                   headers: responseHeaders
-                });
+                };
+
+                resolve(res);
+
+                this._listeners
+                  .filter(l => l.type === 'success')
+                  .forEach(l => l.callback(res));
+
               } else {
-                reject({
+                if (output.statusCode === 401) {
+                  this.logout();
+                }
+
+                const res = {
                   statusCode: output.statusCode,
                   body: responseBody,
                   headers: {
                     contentType
                   }
-                });
+                };
+
+                reject(res);
+
+                this._listeners
+                  .filter(l => l.type === 'error')
+                  .forEach(l => l.callback(res));
               }
             });
           }
@@ -188,6 +213,41 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
       } catch (error) {
         reject(error);
       }
+    });
+  }
+
+  login(authorization: string) {
+    this.authorization = authorization;
+    this.token = authorization.replace(/^Bearer /i, '');
+    this.user = jwt.decode(this.token) as I{{{case gatewayName 'pascal'}}}GatewayClientUser;
+
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('authorization', authorization);
+    }
+  }
+
+  logout() {
+    this.authorization = '';
+    this.token = '';
+    this.user = {} as I{{{case gatewayName 'pascal'}}}GatewayClientUser;
+
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('authorization');
+    }
+  }
+
+  off(type: 'error' | 'success', callback?: I{{{case gatewayName 'pascal'}}}GatewayClientListenerCallback) {
+    this._listeners.forEach((listener, index) => {
+      if (listener.type === type && (!callback || listener.callback === callback)) {
+        this._listeners.splice(index, 1);
+      }
+    });
+  }
+
+  on(type: 'error' | 'success', callback: I{{{case gatewayName 'pascal'}}}GatewayClientListenerCallback) {
+    this._listeners.push({
+      type,
+      callback
     });
   }
   {{#each routes}}
