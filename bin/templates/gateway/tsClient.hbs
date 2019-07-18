@@ -217,9 +217,15 @@ export class {{{case gatewayName 'pascal'}}}GatewayClient implements I{{{case ga
   }
 
   login(authorization: string) {
+    const token = authorization.replace(/^Bearer /i, '');
+    const user = jwt.decode(token) as I{{{case gatewayName 'pascal'}}}GatewayClientUser;
+    if (!user) {
+      return this.logout();
+    }
+
     this.authorization = authorization;
-    this.token = authorization.replace(/^Bearer /i, '');
-    this.user = jwt.decode(this.token) as I{{{case gatewayName 'pascal'}}}GatewayClientUser;
+    this.token = token;
+    this.user = user;
 
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('authorization', authorization);
