@@ -1,7 +1,7 @@
 export interface ISchema {
   async?: boolean;
   pattern?: string;
-  required?: boolean;
+  required?: boolean | string[];
   return?: string;
   enum?: any[];
   type: 'array' | 'boolean' | 'null' | 'number' | 'object' | 'string';
