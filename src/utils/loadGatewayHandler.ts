@@ -7,7 +7,9 @@ export interface ILoadGatewayHandlerOpts {
 }
 
 export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandlerOpts = {}) {
-  const operation = new operationClass();
+  const operation = typeof operationClass === 'function'
+    ? new operationClass()
+    : operationClass;
 
   return async (request: any = {}) => {
     if (opts.enableLogging) {

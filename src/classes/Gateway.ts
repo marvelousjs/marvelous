@@ -9,7 +9,7 @@ import { v4 as uuid } from 'uuid';
 import { configs } from '../configs';
 import { loadGatewayHandler } from '../utils';
 
-import { GatewayRoute } from './GatewayRoute';
+import { GatewayRoute, IGatewayRoute } from './GatewayRoute';
 import { GatewayContentType } from './GatewayContentType';
 
 interface IGatewayOpts {
@@ -19,7 +19,7 @@ interface IGatewayOpts {
   onLoad?: Function;
   onStart?: Function;
   onStop?: Function;
-  routes?: { new(): GatewayRoute }[];
+  routes?: ({ new(): GatewayRoute } | IGatewayRoute)[];
   tokenSecret?: string;
   url?: string;
 }
@@ -33,7 +33,7 @@ export class Gateway {
   environment = process.env.NODE_ENV;
   express: Express;
   listener: http.Server;
-  routes: { new(): GatewayRoute }[] = [];
+  routes: ({ new(): GatewayRoute } | IGatewayRoute)[] = [];
   tokenSecret = this.environment === 'test' || this.environment === 'development'
     ? 'faec406e-e5e3-49de-b497-fd531cb05045'
     : uuid();
@@ -132,7 +132,7 @@ export class Gateway {
       });
 
       this.routes.forEach((Route: any) => {
-        const route: GatewayRoute = new Route();
+        const route: GatewayRoute = typeof Route === 'function' ? new Route() : Route;
         Object.keys(route.methods).forEach(method => {
           const operation = (route.methods as any)[method];
           (this.express as any)[method](
