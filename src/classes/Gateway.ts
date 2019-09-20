@@ -2,7 +2,9 @@ import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import { Express, Request, Response } from 'express';
 import * as http from 'http';
+import * as fs from 'fs';
 import * as jwt from 'jsonwebtoken';
+import * as path from 'path';
 import * as url from 'url';
 import { v4 as uuid } from 'uuid';
 
@@ -130,6 +132,13 @@ export class Gateway {
       this.express.get('/', (req, res) => {
         res.status(200).send({});
       });
+
+      const swaggerFile = path.join(process.cwd(), 'swagger.json');
+      if (fs.existsSync(swaggerFile)) {
+        this.express.get('/swagger.json', (req, res) => {
+          res.status(200).send(fs.readFileSync(swaggerFile, 'utf8'));
+        });
+      }
 
       this.routes.forEach((Route: any) => {
         const route: GatewayRoute = typeof Route === 'function' ? new Route() : Route;
