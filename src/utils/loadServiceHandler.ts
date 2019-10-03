@@ -7,7 +7,9 @@ export interface ILoadServiceHandlerOpts {
 }
 
 export function loadServiceHandler(callClass: any, opts: ILoadServiceHandlerOpts = {}) {
-  const call = new callClass();
+  const call = typeof callClass === 'function'
+    ? new callClass()
+    : callClass;
 
   return async (request: any = {}) => {
     if (opts.enableLogging) {
