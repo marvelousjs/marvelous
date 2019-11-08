@@ -7,6 +7,7 @@
     "mvs": "./bin/mvs.js"
   },
   "dependencies": {
+    "@marvelousjs/gateway-errors": "^1.0.2",
     "@types/body-parser": "^1.17.0",
     "@types/cron": "^1.7.0",
     "@types/express": "^4.17.2",
@@ -16,8 +17,9 @@
     "cron": "^1.7.0",
     "express": "^4.16.4",
     "fs-extra": "^7.0.1",
-    "jazzdb": "^0.7.0",
+    "jazzdb": "^0.7.1",
     "jsonwebtoken": "^8.5.1",
+    "ramda": "^0.26.1",
     "recursive-readdir": "^2.2.2",
     "sane": "^4.1.0",
     "uuid": "^3.3.2"
@@ -25,14 +27,15 @@
   "devDependencies": {
     "@types/jsonwebtoken": "^8.3.2",
     "@types/mocha": "^5.2.5",
-    "@types/node": "^10.12.18",
+    "@types/node": "^10.17.4",
+    "@types/ramda": "^0.26.33",
     "@types/sane": "^2.0.0",
     "@types/uuid": "^3.4.4",
     "axios": "^0.19.0",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.9",
     "ts-node": "^7.0.1",
-    "typescript": "^3.2.1"
+    "typescript": "^3.7.2"
   },
   "files": [
     "bin/",

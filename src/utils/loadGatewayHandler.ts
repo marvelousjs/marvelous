@@ -1,6 +1,6 @@
+import { UnprocessableEntityGatewayError } from '@marvelousjs/gateway-errors';
 import * as validator from 'is-my-json-valid';
-
-import { ValidationGatewayError } from '../errors';
+import { path } from 'ramda';
 
 export interface ILoadGatewayHandlerOpts {
   enableLogging?: boolean;
@@ -19,13 +19,15 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
     // validate request
     if (operation.schema && operation.schema.request) {
       if (operation.schema.request.body) {
-        const validateRequest = validator(operation.schema.request.body as any);
+        const validateRequest = validator(operation.schema.request.body as any, { verbose: true });
         const requestIsValid = validateRequest(request.body);
         if (!requestIsValid) {
-          const errorMessage = `"${validateRequest.errors[0].field.replace(/^data\./, '')}" ${
-            validateRequest.errors[0].message
-          }`;
-          throw new ValidationGatewayError(`Invalid Request Body: ${errorMessage}`);
+          const field = validateRequest.errors[0].field.replace(/^data\./, '');
+          const message = validateRequest.errors[0].message === 'must be an enum value'
+            ? `must be one of the following: ${path<any>((validateRequest.errors[0] as any).schemaPath, operation.schema.request.body).enum.join(', ')}`
+            : validateRequest.errors[0].message;
+          const errorMessage = `"${field}" ${message}`;
+          throw new UnprocessableEntityGatewayError(errorMessage);
         }
       }
 
@@ -36,7 +38,7 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
           const errorMessage = `"${validateRequest.errors[0].field.replace(/^data\./, '')}" ${
             validateRequest.errors[0].message
           }`;
-          throw new ValidationGatewayError(`Invalid Request Headers: ${errorMessage}`);
+          throw new UnprocessableEntityGatewayError(`Invalid Request Headers: ${errorMessage}`);
         }
       }
 
@@ -47,7 +49,7 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
           const errorMessage = `"${validateRequest.errors[0].field.replace(/^data\./, '')}" ${
             validateRequest.errors[0].message
           }`;
-          throw new ValidationGatewayError(`Invalid Request Params: ${errorMessage}`);
+          throw new UnprocessableEntityGatewayError(`Invalid Request Params: ${errorMessage}`);
         }
       }
 
@@ -58,7 +60,7 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
           const errorMessage = `"${validateRequest.errors[0].field.replace(/^data\./, '')}" ${
             validateRequest.errors[0].message
           }`;
-          throw new ValidationGatewayError(`Invalid Request Query: ${errorMessage}`);
+          throw new UnprocessableEntityGatewayError(`Invalid Request Query: ${errorMessage}`);
         }
       }
     }
@@ -79,7 +81,7 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
           const errorMessage = `"${validateResponse.errors[0].field.replace(/^data\./, '')}" ${
             validateResponse.errors[0].message
           }`;
-          throw new ValidationGatewayError(`Invalid Response Body: ${errorMessage}`);
+          throw new Error(`Invalid Response Body: ${errorMessage}`);
         }
       }
 
@@ -90,7 +92,7 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
           const errorMessage = `"${validateResponse.errors[0].field.replace(/^data\./, '')}" ${
             validateResponse.errors[0].message
           }`;
-          throw new ValidationGatewayError(`Invalid Response Headers: ${errorMessage}`);
+          throw new Error(`Invalid Response Headers: ${errorMessage}`);
         }
       }
 
@@ -101,7 +103,7 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
           const errorMessage = `"${validateResponse.errors[0].field.replace(/^data\./, '')}" ${
             validateResponse.errors[0].message
           }`;
-          throw new ValidationGatewayError(`Invalid Response Params: ${errorMessage}`);
+          throw new Error(`Invalid Response Params: ${errorMessage}`);
         }
       }
 
@@ -112,7 +114,7 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
           const errorMessage = `"${validateResponse.errors[0].field.replace(/^data\./, '')}" ${
             validateResponse.errors[0].message
           }`;
-          throw new ValidationGatewayError(`Invalid Response Query: ${errorMessage}`);
+          throw new Error(`Invalid Response Query: ${errorMessage}`);
         }
       }
     }

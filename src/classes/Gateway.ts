@@ -1,3 +1,4 @@
+import { GatewayError, NotFoundGatewayError } from '@marvelousjs/gateway-errors';
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import { Express, Request, Response } from 'express';
@@ -11,17 +12,16 @@ import { v4 as uuid } from 'uuid';
 import { configs } from '../configs';
 import { loadGatewayHandler } from '../utils';
 
-import { GatewayRoute, IGatewayRoute } from './GatewayRoute';
 import { GatewayContentType } from './GatewayContentType';
+import { GatewayRoute, IGatewayRoute } from './GatewayRoute';
 
 interface IGatewayOpts {
   environment?: string;
   enableLogging?: boolean;
-  knownErrors?: { new(): Error }[];
   onLoad?: Function;
   onStart?: Function;
   onStop?: Function;
-  routes?: ({ new(): GatewayRoute } | IGatewayRoute)[];
+  routes?: ({ new (): GatewayRoute } | IGatewayRoute)[];
   tokenSecret?: string;
   url?: string;
 }
@@ -35,10 +35,11 @@ export class Gateway {
   environment = process.env.NODE_ENV;
   express: Express;
   listener: http.Server;
-  routes: ({ new(): GatewayRoute } | IGatewayRoute)[] = [];
-  tokenSecret = this.environment === 'test' || this.environment === 'development'
-    ? 'faec406e-e5e3-49de-b497-fd531cb05045'
-    : uuid();
+  routes: ({ new (): GatewayRoute } | IGatewayRoute)[] = [];
+  tokenSecret =
+    this.environment === 'test' || this.environment === 'development'
+      ? 'faec406e-e5e3-49de-b497-fd531cb05045'
+      : uuid();
   user: any = {};
 
   onLoad: Function;
@@ -46,7 +47,6 @@ export class Gateway {
   onStop: Function;
 
   enableLogging = false;
-  knownErrors: { new(): Error }[] = [];
   url = configs.url || 'http://localhost:5000';
 
   constructor(opts?: IGatewayOpts) {
@@ -64,9 +64,6 @@ export class Gateway {
     }
     if (opts && opts.onStop !== undefined) {
       this.onStop = opts.onStop;
-    }
-    if (opts && opts.knownErrors !== undefined) {
-      this.knownErrors = opts.knownErrors;
     }
     if (opts && opts.tokenSecret !== undefined) {
       this.tokenSecret = opts.tokenSecret;
@@ -97,7 +94,10 @@ export class Gateway {
           res.setHeader('Access-Control-Allow-Origin', origin);
         }
         res.setHeader('Access-Control-Allow-Credentials', 'true');
-        res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+        res.setHeader(
+          'Access-Control-Allow-Headers',
+          'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+        );
         res.setHeader('Access-Control-Allow-Methods', 'GET,PATCH,PUT,DELETE,POST,OPTIONS,HEAD');
         res.setHeader('Access-Control-Expose-Headers', 'Authorization');
         res.setHeader('Content-Type', GatewayContentType.Json);
@@ -144,59 +144,61 @@ export class Gateway {
         const route: GatewayRoute = typeof Route === 'function' ? new Route() : Route;
         Object.keys(route.methods).forEach(method => {
           const operation = (route.methods as any)[method];
-          (this.express as any)[method](
-            route.uri,
-            async (req: IRequest, res: Response) => {
-              let response: any;
-              let statusCode: number;
-              
-              try {
-                const handler = loadGatewayHandler(operation);
-                response = await handler(req);
-                statusCode = response.statusCode || 200;
-                if (response.headers) {
-                  if (response.headers.contentType) {
-                    res.setHeader('Content-Type', response.headers.contentType);
-                  }
-                }
-                if (req.token) {
-                  res.setHeader('Authorization', `Bearer ${req.token}`);
-                }
+          (this.express as any)[method](route.uri, async (req: IRequest, res: Response) => {
+            let response: any;
+            let statusCode: number;
 
-              } catch (error) {
-                // known error
-                if (this.knownErrors.find(knownError => error instanceof knownError)) {
-                  response = {
-                    body: {
-                      name: error.name,
-                      message: error.message
-                    }
-                  };
-                  statusCode = error.statusCode || 400;
-                // unknown error
-                } else {
-                  response = {
-                    body: {
-                      name: 'UnknownGatewayError',
-                      message: 'Server encountered an unexpected error'
-                    }
-                  };
-                  statusCode = 500;
-
-                  console.log('INTERNAL GATEWAY ERROR -', error);
+            try {
+              const handler = loadGatewayHandler(operation);
+              response = await handler(req);
+              statusCode = response.statusCode || 200;
+              if (response.headers) {
+                if (response.headers.contentType) {
+                  res.setHeader('Content-Type', response.headers.contentType);
                 }
               }
+              if (req.token) {
+                res.setHeader('Authorization', `Bearer ${req.token}`);
+              }
+            } catch (error) {
+              // known error
+              if (
+                error instanceof GatewayError
+              ) {
+                response = {
+                  body: {
+                    name: error.name,
+                    message: error.message,
+                    description: error.description
+                  }
+                }
+                statusCode = error.statusCode;
 
-              res.status(statusCode).send(response.body);
+              } else {
+                response = {
+                  body: {
+                    name: 'InternalServerError',
+                    message: 'Internal Server Error. Please try again.',
+                    description: `The server has encountered a situation it doesn't know how to handle.`
+                  }
+                };
+                statusCode = 500;
+
+                console.log('INTERNAL GATEWAY ERROR -', error);
+              }
             }
-          );
+
+            res.status(statusCode).send(response.body);
+          });
         });
       });
 
       this.express.use((req, res, next) => {
+        const notFoundGatewayError = new NotFoundGatewayError();
         res.status(404).send({
-          name: 'NotFoundGatewayError',
-          message: 'Method not found.'
+          name: notFoundGatewayError.name,
+          message: notFoundGatewayError.message,
+          description: notFoundGatewayError.description
         });
       });
 
