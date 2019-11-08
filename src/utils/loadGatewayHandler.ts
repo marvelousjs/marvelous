@@ -25,6 +25,10 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
           const field = validateRequest.errors[0].field.replace(/^data\./, '');
           const message = validateRequest.errors[0].message === 'must be an enum value'
             ? `must be one of the following: ${path<any>((validateRequest.errors[0] as any).schemaPath, operation.schema.request.body).enum.join(', ')}`
+            : validateRequest.errors[0].message === 'has less length than allowed'
+            ? `should be at least ${path<any>((validateRequest.errors[0] as any).schemaPath, operation.schema.request.body).minLength.join(', ')} characters`
+            : validateRequest.errors[0].message === 'has longer length than allowed'
+            ? `should be no longer than ${path<any>((validateRequest.errors[0] as any).schemaPath, operation.schema.request.body).maxLength.join(', ')} characters`
             : validateRequest.errors[0].message;
           const errorMessage = `"${field}" ${message}`;
           throw new UnprocessableEntityGatewayError(errorMessage);
