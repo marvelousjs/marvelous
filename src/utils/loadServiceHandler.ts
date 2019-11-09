@@ -12,7 +12,10 @@ const handle = async (handler: any, request: any) => {
   try {
     return await handler(request);
   } catch (error) {
-    throw new ServiceError(error.message);
+    if (error.name === 'Error') {
+      throw new ServiceError(error.message);
+    }
+    throw error;
   }
 }
 
