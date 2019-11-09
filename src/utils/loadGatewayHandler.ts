@@ -20,7 +20,7 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
     if (operation.schema && operation.schema.request) {
       if (operation.schema.request.body) {
         const validateRequest = validator(operation.schema.request.body as any, {
-          formats: { phone: PhoneFormat, uuid: UuidFormat },,
+          formats: { phone: PhoneFormat, uuid: UuidFormat },
           verbose: true
         });
         const requestIsValid = validateRequest(request.body);
