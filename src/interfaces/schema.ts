@@ -15,6 +15,22 @@ export interface ISchema {
   minLength?: number;
   max?: number;
   min?: number;
+  format?:
+    | 'alpha'
+    | 'alphanumeric'
+    | 'color'
+    | 'date'
+    | 'date-time'
+    | 'email'
+    | 'hostname'
+    | 'ip-address'
+    | 'ipv6'
+    | 'phone'
+    | 'style'
+    | 'time'
+    | 'uri'
+    | 'utc-millisec'
+    | 'uuid';
 }
 
 export interface IGatewaySchema {
