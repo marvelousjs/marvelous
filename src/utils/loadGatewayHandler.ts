@@ -2,7 +2,7 @@ import { UnprocessableEntityGatewayError } from '@marvelousjs/gateway-errors';
 import * as validator from 'is-my-json-valid';
 import { path } from 'ramda';
 
-import { UuidFormat } from '../formats';
+import { PhoneFormat, UuidFormat } from '../formats';
 
 export interface ILoadGatewayHandlerOpts {
   enableLogging?: boolean;
@@ -20,7 +20,7 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
     if (operation.schema && operation.schema.request) {
       if (operation.schema.request.body) {
         const validateRequest = validator(operation.schema.request.body as any, {
-          formats: { uuid: UuidFormat },
+          formats: { phone: PhoneFormat, uuid: UuidFormat },,
           verbose: true
         });
         const requestIsValid = validateRequest(request.body);
@@ -54,7 +54,7 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
 
       if (operation.schema.request.headers) {
         const validateRequest = validator(operation.schema.request.headers as any, {
-          formats: { uuid: UuidFormat }
+          formats: { phone: PhoneFormat, uuid: UuidFormat },
         });
         const requestIsValid = validateRequest(request.headers);
         if (!requestIsValid) {
@@ -67,7 +67,7 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
 
       if (operation.schema.request.params) {
         const validateRequest = validator(operation.schema.request.params as any, {
-          formats: { uuid: UuidFormat }
+          formats: { phone: PhoneFormat, uuid: UuidFormat },
         });
         const requestIsValid = validateRequest(request.params);
         if (!requestIsValid) {
@@ -80,7 +80,7 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
 
       if (operation.schema.request.query) {
         const validateRequest = validator(operation.schema.request.query as any, {
-          formats: { uuid: UuidFormat }
+          formats: { phone: PhoneFormat, uuid: UuidFormat },
         });
         const requestIsValid = validateRequest(request.query);
         if (!requestIsValid) {
@@ -103,7 +103,7 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
     if (operation.schema && operation.schema.response) {
       if (operation.schema.response.body) {
         const validateResponse = validator(operation.schema.response.body as any, {
-          formats: { uuid: UuidFormat }
+          formats: { phone: PhoneFormat, uuid: UuidFormat },
         });
         const responseIsValid = validateResponse(response.body);
         if (!responseIsValid) {
@@ -116,7 +116,7 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
 
       if (operation.schema.response.headers) {
         const validateResponse = validator(operation.schema.response.headers as any, {
-          formats: { uuid: UuidFormat }
+          formats: { phone: PhoneFormat, uuid: UuidFormat },
         });
         const responseIsValid = validateResponse(response.headers);
         if (!responseIsValid) {
@@ -129,7 +129,7 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
 
       if (operation.schema.response.params) {
         const validateResponse = validator(operation.schema.response.params as any, {
-          formats: { uuid: UuidFormat }
+          formats: { phone: PhoneFormat, uuid: UuidFormat },
         });
         const responseIsValid = validateResponse(response.params);
         if (!responseIsValid) {
@@ -142,7 +142,7 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
 
       if (operation.schema.response.query) {
         const validateResponse = validator(operation.schema.response.query as any, {
-          formats: { uuid: UuidFormat }
+          formats: { phone: PhoneFormat, uuid: UuidFormat },
         });
         const responseIsValid = validateResponse(response.query);
         if (!responseIsValid) {
