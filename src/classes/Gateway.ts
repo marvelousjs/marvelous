@@ -113,7 +113,7 @@ export class Gateway {
           },
           set: (payload = {}) => {
             const jwtOpts: jwt.SignOptions = {};
-            if (this.tokenExpiresIn) {
+            if (!payload.exp && this.tokenExpiresIn) {
               jwtOpts.expiresIn = this.tokenExpiresIn;
             }
             req.token = jwt.sign(payload, this.tokenSecret, jwtOpts);
