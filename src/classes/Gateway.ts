@@ -22,6 +22,7 @@ interface IGatewayOpts {
   onStart?: Function;
   onStop?: Function;
   routes?: ({ new (): GatewayRoute } | IGatewayRoute)[];
+  tokenExpiresIn?: number;
   tokenSecret?: string;
   url?: string;
 }
@@ -36,6 +37,7 @@ export class Gateway {
   express: Express;
   listener: http.Server;
   routes: ({ new (): GatewayRoute } | IGatewayRoute)[] = [];
+  tokenExpiresIn = 15 * 60;
   tokenSecret =
     this.environment === 'test' || this.environment === 'development'
       ? 'faec406e-e5e3-49de-b497-fd531cb05045'
@@ -64,6 +66,9 @@ export class Gateway {
     }
     if (opts && opts.onStop !== undefined) {
       this.onStop = opts.onStop;
+    }
+    if (opts && opts.tokenExpiresIn !== undefined) {
+      this.tokenExpiresIn = opts.tokenExpiresIn;
     }
     if (opts && opts.tokenSecret !== undefined) {
       this.tokenSecret = opts.tokenSecret;
@@ -107,7 +112,11 @@ export class Gateway {
             return this.user;
           },
           set: (payload = {}) => {
-            req.token = jwt.sign(payload, this.tokenSecret);
+            const jwtOpts: jwt.SignOptions = {};
+            if (this.tokenExpiresIn) {
+              jwtOpts.expiresIn = this.tokenExpiresIn;
+            }
+            req.token = jwt.sign(payload, this.tokenSecret, jwtOpts);
             this.user = payload;
           }
         });
@@ -162,18 +171,15 @@ export class Gateway {
               }
             } catch (error) {
               // known error
-              if (
-                error instanceof GatewayError
-              ) {
+              if (error instanceof GatewayError) {
                 response = {
                   body: {
                     name: error.name,
                     message: error.message,
                     description: error.description
                   }
-                }
+                };
                 statusCode = error.statusCode;
-
               } else {
                 response = {
                   body: {
