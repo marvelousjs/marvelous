@@ -46,6 +46,8 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
                     operation.schema.request.body
                   ).maxLength
                 } characters`
+              : validateRequest.errors[0].message === 'is the wrong type'
+              ? `is the wrong type: ${typeof validateRequest.errors[0].value}`
               : validateRequest.errors[0].message;
           const errorMessage = `"${field}" ${message}`;
           throw new UnprocessableEntityGatewayError(errorMessage);
