@@ -17,7 +17,6 @@
     "cron": "^1.7.0",
     "express": "^4.16.4",
     "fs-extra": "^7.0.1",
-    "jazzdb": "^0.9.0",
     "jsonwebtoken": "^8.5.1",
     "ramda": "^0.26.1",
     "recursive-readdir": "^2.2.2",
