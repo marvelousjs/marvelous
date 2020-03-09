@@ -5,11 +5,13 @@ import { Express, Request, Response } from 'express';
 import * as http from 'http';
 import * as fs from 'fs';
 import * as jwt from 'jsonwebtoken';
+import { AddressInfo } from 'net';
 import * as path from 'path';
 import * as url from 'url';
-import { v4 as uuid } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 
 import { configs } from '../configs';
+import { getCurl } from '../functions';
 import { loadGatewayHandler } from '../utils';
 
 import { GatewayContentType } from './GatewayContentType';
@@ -19,12 +21,30 @@ interface IGatewayOpts {
   environment?: string;
   enableLogging?: boolean;
   onLoad?: Function;
+  onLog?: (res: IGatewayOnLog) => Promise<void>;
   onStart?: Function;
   onStop?: Function;
   routes?: ({ new (): GatewayRoute } | IGatewayRoute)[];
   tokenExpiresIn?: number;
   tokenSecret?: string;
   url?: string;
+}
+
+interface IGatewayOnLog {
+  curl: string;
+  duration: number;
+  errorMessage?: string;
+  httpVersion: string;
+  method: string;
+  path: string;
+  port: number;
+  query: string;
+  requestBody: string;
+  requestHeaders: string[];
+  responseBody: string;
+  responseHeaders: string[];
+  statusCode: number;
+  statusMessage: string;
 }
 
 interface IRequest extends Request {
@@ -41,10 +61,11 @@ export class Gateway {
   tokenSecret =
     this.environment === 'test' || this.environment === 'development'
       ? 'faec406e-e5e3-49de-b497-fd531cb05045'
-      : uuid();
+      : uuidv4();
   user: any = {};
 
   onLoad: Function;
+  onLog: (res: IGatewayOnLog) => Promise<void>;
   onStart: Function;
   onStop: Function;
 
@@ -60,6 +81,9 @@ export class Gateway {
     }
     if (opts && opts.onLoad !== undefined) {
       this.onLoad = opts.onLoad;
+    }
+    if (opts && opts.onLog !== undefined) {
+      this.onLog = opts.onLog;
     }
     if (opts && opts.onStart !== undefined) {
       this.onStart = opts.onStart;
@@ -154,6 +178,9 @@ export class Gateway {
         Object.keys(route.methods).forEach(method => {
           const operation = (route.methods as any)[method];
           (this.express as any)[method](route.uri, async (req: IRequest, res: Response) => {
+            const startTime = +new Date;
+
+            let errorMessage: string;
             let response: any;
             let statusCode: number;
 
@@ -170,6 +197,8 @@ export class Gateway {
                 res.setHeader('Authorization', `Bearer ${req.token}`);
               }
             } catch (error) {
+              errorMessage = error.message;
+
               // known error
               if (error instanceof GatewayError) {
                 response = {
@@ -195,17 +224,64 @@ export class Gateway {
             }
 
             res.status(statusCode).send(response.body);
+
+            if (this.onLog) {
+              const addressInfo = this.listener.address() as AddressInfo;
+
+              this.onLog({
+                curl: getCurl(req, addressInfo),
+                duration: +new Date - startTime,
+                errorMessage,
+                httpVersion: req.httpVersion,
+                method: req.method,
+                path: req.path,
+                port: (this.listener.address() as AddressInfo).port,
+                query: Object.entries(req.query).map(([key, value]) => `${key}=${value}`).join('&'),
+                requestBody: JSON.stringify(req.body),
+                requestHeaders: Object.entries(req.headers).map(([key, value]) => `${key}: ${value}`),
+                responseBody: JSON.stringify(response.body),
+                responseHeaders: Object.entries(res.getHeaders()).map(([key, value]) => `${key}: ${value}`),
+                statusCode,
+                statusMessage: res.statusMessage
+              });
+            }
           });
         });
       });
 
       this.express.use((req, res, next) => {
+        const startTime = +new Date;
+
+        const statusCode = 404;
         const notFoundGatewayError = new NotFoundGatewayError();
-        res.status(404).send({
+        const responseBody = {
           name: notFoundGatewayError.name,
           message: notFoundGatewayError.message,
           description: notFoundGatewayError.description
-        });
+        };
+
+        res.status(404).send(responseBody);
+
+        if (this.onLog) {
+          const addressInfo = this.listener.address() as AddressInfo;
+
+          this.onLog({
+            curl: getCurl(req, addressInfo),
+            duration: +new Date - startTime,
+            errorMessage: notFoundGatewayError.message,
+            httpVersion: req.httpVersion,
+            method: req.method,
+            path: req.path,
+            port: (this.listener.address() as AddressInfo).port,
+            query: Object.entries(req.query).map(([key, value]) => `${key}=${value}`).join('&'),
+            requestBody: JSON.stringify(req.body),
+            requestHeaders: Object.entries(req.headers).map(([key, value]) => `${key}: ${value}`),
+            responseBody: JSON.stringify(responseBody),
+            responseHeaders: Object.entries(res.getHeaders()).map(([key, value]) => `${key}: ${value}`),
+            statusCode,
+            statusMessage: res.statusMessage
+          });
+        }
       });
 
       const serverUrl = url.parse(this.url);
