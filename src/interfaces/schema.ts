@@ -1,5 +1,6 @@
 export interface ISchema {
   async?: boolean;
+  description?: string;
   pattern?: string;
   required?: boolean | string[];
   return?: string;
