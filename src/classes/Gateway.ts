@@ -61,6 +61,8 @@ export class Gateway {
   tokenSecret =
     this.environment === 'test' || this.environment === 'development'
       ? 'faec406e-e5e3-49de-b497-fd531cb05045'
+      : process.env.MARVELOUS_JWT_SECRET
+      ? process.env.MARVELOUS_JWT_SECRET
       : uuidv4();
   user: any = {};
 
