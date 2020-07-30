@@ -1,5 +1,6 @@
 data/local/
 data/production/
 dist/
+node_modules/
 node_modules/sendgrid.env
 src/server/configs/local.ts

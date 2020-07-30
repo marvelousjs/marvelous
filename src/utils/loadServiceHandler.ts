@@ -3,6 +3,7 @@ import * as validator from 'is-my-json-valid';
 import { ServiceError } from '../classes';
 import { ValidationServiceError } from '../errors';
 import { PhoneFormat, UuidFormat } from '../formats';
+import { removeEmpty } from './removeEmpty';
 
 export interface ILoadServiceHandlerOpts {
   enableLogging?: boolean;
@@ -42,7 +43,7 @@ export function loadServiceHandler(callClass: any, opts: ILoadServiceHandlerOpts
     }
 
     // get reponse
-    const response = await handle(call.handler, request);
+    const response = removeEmpty(await handle(call.handler, request));
 
     if (opts.enableLogging) {
       console.log('RESPONSE - ', response);

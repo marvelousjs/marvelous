@@ -3,6 +3,7 @@ import * as validator from 'is-my-json-valid';
 import { path } from 'ramda';
 
 import { PhoneFormat, UuidFormat } from '../formats';
+import { removeEmpty } from './removeEmpty';
 
 export interface ILoadGatewayHandlerOpts {
   enableLogging?: boolean;
@@ -95,7 +96,7 @@ export function loadGatewayHandler(operationClass: any, opts: ILoadGatewayHandle
     }
 
     // get reponse
-    const response = await operation.handler(request);
+    const response = removeEmpty(await operation.handler(request));
 
     if (opts.enableLogging) {
       console.log('RESPONSE - ', response);
