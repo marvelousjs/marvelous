@@ -1,14 +1,17 @@
 const removeEmptyFromArray = (array: any[]) => {
   const newArray: any[] = array
-    .filter(v => v !== undefined && v !== null)
-    .map(v => {
-      if (Array.isArray(v)) {
-        return removeEmptyFromArray(v);
+    .filter(value => value !== undefined && value !== null)
+    .map(value => {
+      if (value instanceof Buffer) {
+        return value;
       }
-      if (typeof v === 'object') {
-        return removeEmpty(v);
+      if (Array.isArray(value)) {
+        return removeEmptyFromArray(value);
       }
-      return v;
+      if (typeof value === 'object') {
+        return removeEmpty(value);
+      }
+      return value;
     });
   return newArray;
 };
@@ -20,7 +23,9 @@ export const removeEmpty = (object: any) => {
       return;
     }
 
-    if (Array.isArray(value)) {
+    if (value instanceof Buffer) {
+      newObject[key] = value;
+    } else if (Array.isArray(value)) {
       newObject[key] = removeEmptyFromArray(value);
     } else if (typeof value === 'object') {
       newObject[key] = removeEmpty(value);

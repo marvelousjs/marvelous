@@ -326,4 +326,22 @@ describe('removeEmpty', () => {
       ]
     });
   });
+
+  it('should ignore buffers', () => {
+    const oldObject: {
+      image: Buffer;
+    } = {
+      image: Buffer.from('abc', 'base64')
+    };
+
+    const newObject = removeEmpty(oldObject);
+
+    assert.deepStrictEqual(oldObject, {
+      image: Buffer.from('abc', 'base64')
+    });
+
+    assert.deepStrictEqual(newObject, {
+      image: Buffer.from('abc', 'base64')
+    });
+  });
 });
