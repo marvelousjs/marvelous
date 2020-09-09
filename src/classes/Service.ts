@@ -7,6 +7,7 @@ import * as url from 'url';
 
 import { configs } from '../configs';
 import { loadServiceHandler } from '../utils';
+import { ServiceError } from './ServiceError';
 import { ServiceJob } from './ServiceJob';
 
 interface IServiceOpts {
@@ -112,11 +113,22 @@ export class Service {
               statusCode = 200;
 
             } catch (error) {
-              response = {
-                name: error.name,
-                message: error.message
-              };
-              statusCode = 400;
+              // known error
+              if (error instanceof ServiceError) {
+                response = {
+                  name: error.name,
+                  message: error.message
+                };
+                statusCode = 400;
+              } else {
+                response = {
+                  name: 'InternalServerError',
+                  message: 'Internal Server Error. Please try again.'
+                };
+                statusCode = 500;
+
+                console.log('INTERNAL SERVICE ERROR -', error);
+              }
             }
 
             res.status(statusCode).send(response);
