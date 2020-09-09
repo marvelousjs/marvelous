@@ -1,23 +1,11 @@
 import * as validator from 'is-my-json-valid';
 
-import { ServiceError } from '../classes';
 import { ValidationServiceError } from '../errors';
 import { PhoneFormat, UuidFormat } from '../formats';
 import { removeEmpty } from './removeEmpty';
 
 export interface ILoadServiceHandlerOpts {
   enableLogging?: boolean;
-}
-
-const handle = async (handler: any, request: any) => {
-  try {
-    return await handler(request);
-  } catch (error) {
-    if (error.name === 'Error') {
-      throw new ServiceError(error.message);
-    }
-    throw error;
-  }
 }
 
 export function loadServiceHandler(callClass: any, opts: ILoadServiceHandlerOpts = {}) {
@@ -43,7 +31,7 @@ export function loadServiceHandler(callClass: any, opts: ILoadServiceHandlerOpts
     }
 
     // get reponse
-    const response = removeEmpty(await handle(call.handler, request));
+    const response = removeEmpty(await call.handler(request));
 
     if (opts.enableLogging) {
       console.log('RESPONSE - ', response);
